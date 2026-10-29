@@ -1,0 +1,236 @@
+/* O portal da empresa. O mesmo desenho do espaço do cliente do IRS — menu
+   azul-escuro fixo à esquerda, só o conteúdo muda — para o cliente reconhecer
+   a casa. O conteúdo usa a largura toda: os balancetes precisam dela. */
+
+.portal {
+  display: grid;
+  grid-template-columns: 16.5rem minmax(0, 1fr);
+  min-block-size: 100dvh;
+  background: var(--fundo);
+}
+
+/* ------------------------------------------------------------ menu lateral */
+.lateral {
+  position: sticky;
+  inset-block-start: 0;
+  align-self: start;
+  block-size: 100dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  padding: var(--e-5) var(--e-3);
+  padding-block-start: calc(var(--e-5) + env(safe-area-inset-top));
+  background: var(--azul-profundo);
+  color: #fff;
+}
+.marca { display: block; padding-inline: var(--e-3); }
+.marca img { display: block; inline-size: 4.2rem; block-size: auto; }
+
+.empresa {
+  display: grid;
+  gap: .15rem;
+  padding: .7rem .85rem;
+  border-radius: .8rem;
+  background: #10294d;
+  border: 1px solid #1d3458;
+}
+.empresa strong { font-size: .9rem; line-height: 1.25; }
+.empresa span { font-size: .74rem; color: #8ea6c8; }
+.trocar { position: relative; }
+.trocar summary { list-style: none; cursor: pointer; }
+.trocar summary::-webkit-details-marker { display: none; }
+.trocar summary .seta { position: absolute; inset-inline-end: .8rem; inset-block-start: .9rem; color: #8ea6c8; font-size: .8rem; }
+.trocar[open] summary .seta { transform: rotate(180deg); }
+.outras { display: grid; gap: 2px; margin-block-start: .35rem; }
+.outras a {
+  display: block;
+  padding: .45rem .85rem;
+  border-radius: .6rem;
+  color: #c6d6ee;
+  font-size: .82rem;
+  text-decoration: none;
+}
+.outras a:hover { background: #15305a; color: #fff; }
+
+.menu { display: grid; gap: 2px; }
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .62rem .85rem;
+  border-radius: .7rem;
+  color: #b9cbea;
+  font-size: .92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+.item svg { flex: none; opacity: .85; }
+.item:hover { background: #15305a; color: #fff; }
+.item[aria-current='page'] { background: var(--acao); color: #fff; }
+.item[aria-current='page'] svg { opacity: 1; }
+.item:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.contagem {
+  margin-inline-start: auto;
+  min-inline-size: 1.35rem;
+  padding: .05rem .42rem;
+  border-radius: 999px;
+  background: #7fd1ff;
+  color: var(--azul-profundo);
+  font-size: .7rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.contabilista {
+  margin-block-start: auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: .7rem;
+  align-items: center;
+  padding: var(--e-4) var(--e-3) 0;
+  border-block-start: 1px solid #1d3458;
+}
+.contabilista strong { display: block; font-size: .82rem; color: #fff; }
+.contabilista span { display: block; font-size: .72rem; color: #8ea6c8; }
+.avatar {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: 999px;
+  object-fit: cover;
+  background: #1d3458;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / .18);
+}
+.contactos { grid-column: 1 / -1; display: flex; gap: var(--e-3); flex-wrap: wrap; }
+.contactos a { color: #c6d6ee; font-size: .78rem; font-weight: 650; text-underline-offset: 2px; }
+.contactos a:hover { color: #fff; }
+
+.sairForm { margin: 0; }
+.sair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  inline-size: 100%;
+  padding: .72rem 1rem;
+  border: 1px solid #2a4673;
+  border-radius: .7rem;
+  background: #10294d;
+  color: #dbe6f6;
+  font: inherit;
+  font-size: .92rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.sair:hover { background: rgb(224 104 95 / .16); border-color: #e0685f; color: #fff; }
+
+/* ------------------------------------------------------------------ topo */
+.principal { min-inline-size: 0; display: flex; flex-direction: column; }
+.topo {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e-3) var(--e-4);
+  padding: var(--e-4) clamp(var(--e-4), 2.5vw, var(--e-8));
+  background: color-mix(in srgb, var(--fundo) 90%, transparent);
+  backdrop-filter: blur(10px);
+  border-block-end: 1px solid var(--linha);
+}
+.tituloTopo { min-inline-size: 0; }
+.tituloTopo h1 { margin: 0; font-size: var(--t-xl); letter-spacing: -.035em; }
+.tituloTopo p { margin: .15rem 0 0; font-size: var(--t-sm); color: var(--texto-suave); }
+.acoesTopo { margin-inline-start: auto; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+/* A data de corte sempre à vista: é ela que diz o que se pode tirar daqui. */
+.corte {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .38rem .8rem;
+  border-radius: 999px;
+  background: var(--positivo-suave);
+  color: #0a5c47;
+  border: 1px solid color-mix(in srgb, var(--positivo) 25%, transparent);
+  font-size: var(--t-sm);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.corte[data-sem='true'] { background: var(--atencao-suave); color: #7a4d05; border-color: color-mix(in srgb, var(--atencao) 28%, transparent); }
+.corte svg { flex: none; }
+.botaoTopo {
+  display: inline-flex;
+  align-items: center;
+  padding: .42rem .8rem;
+  border: 1px solid var(--linha-forte);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-size: var(--t-sm);
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.botaoTopo:hover { border-color: var(--acao); color: var(--acao-forte); }
+.sairTopo { display: none; margin: 0; }
+
+.vistaGabinete {
+  padding: .5rem clamp(var(--e-4), 2.5vw, var(--e-8));
+  background: var(--atencao-suave);
+  color: #7a4d05;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  border-block-end: 1px solid color-mix(in srgb, var(--atencao) 28%, transparent);
+}
+
+.painel {
+  display: grid;
+  gap: var(--e-5);
+  align-content: start;
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--e-5) clamp(var(--e-4), 2.5vw, var(--e-8)) var(--e-8);
+}
+
+/* ------------------------------------------------------------- telemóvel */
+@media (max-width: 900px) {
+  .portal { grid-template-columns: 1fr; }
+  .lateral {
+    position: sticky;
+    z-index: 10;
+    block-size: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--e-2);
+    padding: var(--e-2) var(--e-3);
+    padding-block-start: calc(var(--e-2) + env(safe-area-inset-top));
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .lateral::-webkit-scrollbar { display: none; }
+  .marca { padding-inline: var(--e-1); }
+  .marca img { inline-size: 2.6rem; }
+  .empresa, .trocar, .contabilista, .sairForm { display: none; }
+  .menu { display: flex; gap: 2px; }
+  .item { padding: .5rem .7rem; white-space: nowrap; font-size: .84rem; }
+  .item svg { display: none; }
+  .contagem { margin-inline-start: .3rem; }
+  .topo { position: static; padding: var(--e-4); }
+  .sairTopo { display: block; }
+  .painel { padding: var(--e-4) var(--e-4) var(--e-7); }
+}
+@media (max-width: 560px) {
+  .acoesTopo { margin-inline-start: 0; inline-size: 100%; }
+}
+@media print {
+  .lateral, .topo, .vistaGabinete { display: none; }
+  .portal { display: block; background: #fff; }
+  .painel { padding: 0; }
+}
