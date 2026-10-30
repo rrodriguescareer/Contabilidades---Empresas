@@ -5,7 +5,10 @@ import { configuration, supabase } from './supabase';
 
 const erro = (mensagem: string) => `/entrar?erro=${encodeURIComponent(mensagem)}`;
 
-export type EmpresaDoPortal = { id: string; nome: string; nif: string; data_corte: string | null; tem_cegid: boolean };
+export type EmpresaDoPortal = {
+  id: string; nome: string; nif: string; data_corte: string | null; tem_cegid: boolean;
+  inicio: string | null; logotipo: string | null; logotipo_em: string | null; cegid_versao: number; tem_trabalhadores: boolean;
+};
 export type Contexto = {
   id: string;
   email: string;

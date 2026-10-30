@@ -23,7 +23,7 @@ export default async function Extrato({ params, searchParams }: { params: Promis
   }
   const anos = [...new Set([Number(empresa.data_corte.slice(0, 4)), ...anosDisponiveis(empresa.data_corte)])].sort((a, b) => b - a);
   const ano = anos.includes(Number(pedido.ano)) ? Number(pedido.ano) : anos[0];
-  const r = await obterExtrato(empresa.id, empresa.data_corte, ano, conta);
+  const r = await obterExtrato(empresa, ano, conta);
   if (r.ok) await registarExtracao(empresa.id, user.id, 'extrato', `Extrato da conta ${conta} de ${ano}, até ${r.dados.fim}`);
 
   let acumulado = 0;
@@ -42,7 +42,11 @@ export default async function Extrato({ params, searchParams }: { params: Promis
         <section className={p.cartao}>
           <div className={p.cabecalho}>
             <div><h2>Conta {r.dados.conta}{r.dados.descricao ? ` · ${r.dados.descricao}` : ''}</h2><p>De {data(r.dados.inicio)} a {data(r.dados.fim)}</p></div>
-            <Imprimir className="btn btn-secundario btn-sm naoImprimir" />
+            <div className={p.acoes}>
+              <a className="btn btn-sm" href={`${base}/extrato/exportar?formato=pdf&conta=${conta}&ano=${ano}`}><Icone nome="descarregar" tamanho={16} /> PDF</a>
+              <a className="btn btn-secundario btn-sm" href={`${base}/extrato/exportar?formato=xlsx&conta=${conta}&ano=${ano}`}><Icone nome="descarregar" tamanho={16} /> Excel</a>
+              <Imprimir className="btn btn-discreto btn-sm naoImprimir" />
+            </div>
           </div>
           <p className={p.carimbo}>
             <Icone nome="cadeado" tamanho={16} />

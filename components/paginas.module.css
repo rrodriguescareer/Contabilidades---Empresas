@@ -292,3 +292,64 @@ a.numero:hover { border-color: var(--acao); }
   .envolveTabela { border: 0; overflow: visible; }
   .tabela th { position: static; }
 }
+
+/* ------------------------------------------------------------ alertas */
+.alertas { display: grid; gap: var(--e-3); }
+.alerta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--e-3);
+  align-items: center;
+  padding: var(--e-4) var(--e-5);
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--acao) 25%, transparent);
+  border-inline-start: 4px solid var(--acao);
+  background: var(--acao-suave);
+}
+.alerta[data-nivel='aviso'] { border-color: color-mix(in srgb, var(--atencao) 30%, transparent); border-inline-start-color: var(--atencao); background: var(--atencao-suave); }
+.alerta[data-nivel='urgente'] { border-color: color-mix(in srgb, var(--critico) 30%, transparent); border-inline-start-color: var(--critico); background: var(--critico-suave); }
+.alerta strong { display: block; font-size: var(--t-base); }
+.alerta p { margin: .2rem 0 0; font-size: var(--t-sm); white-space: pre-wrap; }
+.alerta small { display: block; margin-block-start: .3rem; font-size: var(--t-xs); color: var(--texto-suave); }
+@media (max-width: 560px) { .alerta { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------------------ formulários */
+.formulario { display: grid; gap: var(--e-5); }
+.grupo { display: grid; gap: var(--e-3); }
+.grupo h3 { font-size: var(--t-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--texto-ténue); }
+.linhaCampos { display: grid; gap: var(--e-3); grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr)); align-items: end; }
+.marcar { display: flex; align-items: center; gap: .6rem; font-size: var(--t-sm); font-weight: 600; }
+.marcar input { inline-size: 1.1rem; block-size: 1.1rem; }
+
+.abas { display: flex; flex-wrap: wrap; gap: .4rem; }
+.aba {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .45rem .9rem;
+  border: 1px solid var(--linha); border-radius: 999px; background: var(--superficie);
+  color: var(--texto); font-size: var(--t-sm); font-weight: 650; text-decoration: none;
+}
+.aba[aria-current='true'] { background: var(--azul-profundo); border-color: var(--azul-profundo); color: #fff; }
+.aba span { min-inline-size: 1.2rem; padding: 0 .35rem; border-radius: 999px; background: var(--critico); color: #fff; font-size: .7rem; text-align: center; }
+
+/* ------------------------------------------------------------ impostos */
+.impostos { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-3); }
+.imposto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--e-3) var(--e-4);
+  padding: var(--e-4) var(--e-5);
+  border: 1px solid var(--linha);
+  border-radius: 1rem;
+  background: var(--superficie);
+}
+.imposto[data-estado='atraso'] { border-color: color-mix(in srgb, var(--critico) 45%, transparent); background: var(--critico-suave); }
+.imposto[data-estado='pago'] { opacity: .8; }
+.imposto h3 { margin: 0; font-size: var(--t-base); }
+.imposto p { margin: .15rem 0 0; font-size: var(--t-sm); color: var(--texto-suave); }
+.valor { font-family: var(--fonte-titulo); font-size: var(--t-xl); font-weight: 760; letter-spacing: -.03em; text-align: end; font-variant-numeric: tabular-nums; }
+.valor small { display: block; font-family: var(--fonte); font-size: var(--t-xs); font-weight: 600; color: var(--texto-suave); letter-spacing: 0; }
+.impostoAcoes { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.referencia { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--texto); }
+@media (max-width: 560px) { .imposto { grid-template-columns: 1fr; } .valor { text-align: start; } }
+
+.historico td { font-size: var(--t-xs); }

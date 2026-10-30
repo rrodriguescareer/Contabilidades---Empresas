@@ -1,12 +1,14 @@
 /* O estado dos documentos de um mês, como o cliente o lê. */
 export type Mes = {
   mes: string; prazo: string; documentos: number; atrasados: number; devolvidos: number;
-  completo_em: string | null; conferido_em: string | null;
+  completo_em: string | null; conferido_em: string | null; bloqueado?: boolean; fechado_em?: string | null;
 };
 
 export function estadoDoMes(m: Mes, agora = Date.now()) {
+  if (m.fechado_em) return { estado: 'conferido', texto: 'Informação completa' };
   if (m.conferido_em) return { estado: 'conferido', texto: 'Conferido pelo contabilista' };
   if (m.completo_em) return { estado: 'completo', texto: 'Entregue — a aguardar conferência' };
+  if (m.bloqueado) return { estado: 'completo', texto: 'Envio bloqueado' };
   if (Date.parse(m.prazo) <= agora) return { estado: 'atraso', texto: m.documentos ? 'Prazo terminado' : 'Prazo terminado sem documentos' };
   return { estado: 'aberto', texto: m.documentos ? 'Em curso' : 'Por enviar' };
 }

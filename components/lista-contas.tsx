@@ -16,7 +16,7 @@ export async function ListaContas({ id, secao, procura }: { id: string; secao: S
   const cfg = SECOES_DE_CONTAS[secao];
   const limite = ultimoMesFechado(empresa.data_corte);
   if (!limite) return <Indisponivel base={base} motivo="corte" erro="O contabilista ainda não definiu a data de corte desta empresa." />;
-  const b = await obterBalancete(empresa.id, empresa.data_corte, limite.ano, limite.mes);
+  const b = await obterBalancete(empresa, limite.ano, limite.mes);
   if (!b.ok) return <Indisponivel base={base} erro={b.erro} motivo={b.motivo} />;
   await registarExtracao(empresa.id, user.id, secao, `${cfg.titulo}: saldos consultados (fim de ${mesAno(b.dados.fim)})`);
 

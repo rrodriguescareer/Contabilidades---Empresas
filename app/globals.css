@@ -871,3 +871,20 @@
   .lista-simples { padding-inline-start: 1.1rem; font-size: var(--t-sm); color: var(--texto-suave); }
   .lista-simples li + li { margin-block-start: .2rem; }
 }
+
+/* A confirmação de mudança de portal (IRS ↔ Empresas). */
+@layer components {
+  .confirmar-portal {
+    inline-size: min(26rem, calc(100vw - 2rem));
+    padding: var(--e-5);
+    border: 1px solid var(--linha);
+    border-radius: 1rem;
+    background: var(--superficie);
+    color: var(--texto);
+    box-shadow: var(--sombra-3);
+  }
+  .confirmar-portal::backdrop { background: rgb(6 23 46 / .55); backdrop-filter: blur(2px); }
+  .confirmar-portal h2 { font-size: var(--t-lg); margin-block-end: var(--e-2); }
+  .confirmar-portal p { color: var(--texto-suave); font-size: var(--t-sm); }
+  .confirmar-portal-acoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-2); margin-block-start: var(--e-4); }
+}

@@ -32,9 +32,14 @@ export default async function Documentos({ params, searchParams }: {
   const base = `/app/${empresa.id}`;
 
   const atual = mesAtualEmLisboa();
-  const meses = mesesParaEnviar(atual);
+  // Nada antes do início do acompanhamento.
+  const inicio = empresa.inicio?.slice(0, 7);
+  const meses = mesesParaEnviar(atual).filter((m) => !inicio || m >= inicio);
+  if (!meses.length) {
+    return <p className="vazio">O acompanhamento desta empresa começa em {mesAno(`${inicio}-01`)}. Os documentos desse mês podem ser enviados a partir dele.</p>;
+  }
   const diaHoje = Number(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon', day: '2-digit' }).format(new Date()));
-  const emCurso = diaHoje <= 10 ? meses[1] : meses[0];
+  const emCurso = (diaHoje <= 10 && meses[1]) || meses[0];
   const mes = meses.includes(pedido.mes || '') ? pedido.mes! : emCurso;
   const prazo = prazoDoMes(mes);
   const foraDoPrazo = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date()) > prazo;
@@ -44,9 +49,10 @@ export default async function Documentos({ params, searchParams }: {
       .select('id,categoria,nome,mime,tamanho,tamanho_original,estado,atrasado,resposta,nota,enviado_por,enviado_em')
       .eq('company_id', empresa.id).eq('mes', `${mes}-01`).neq('estado', 'pendente')
       .order('enviado_em', { ascending: false }),
-    client.from('empresa_meses').select('completo_em,conferido_em,nota').eq('company_id', empresa.id).eq('mes', `${mes}-01`).maybeSingle(),
+    client.from('empresa_meses').select('completo_em,conferido_em,nota,bloqueado,fechado_em').eq('company_id', empresa.id).eq('mes', `${mes}-01`).maybeSingle(),
   ]);
   const lista = (documentos ?? []) as Documento[];
+  const fechado = Boolean(estadoMes?.fechado_em || estadoMes?.bloqueado);
   const poupado = lista.reduce((t, d) => t + Math.max(0, (d.tamanho_original ?? d.tamanho) - d.tamanho), 0);
 
   return (
@@ -66,18 +72,31 @@ export default async function Documentos({ params, searchParams }: {
                 <h2>Enviar documentos de {mesAno(`${mes}-01`)}</h2>
                 <p>{foraDoPrazo ? `O prazo terminou a ${dataLonga(prazo)}.` : `Prazo: até ${dataLonga(prazo)}.`}</p>
               </div>
-              {estadoMes?.conferido_em ? <span className="etiqueta etiqueta-positivo">Conferido</span>
+              {estadoMes?.fechado_em ? <span className="etiqueta etiqueta-positivo">Informação completa</span>
+                : estadoMes?.bloqueado ? <span className="etiqueta etiqueta-critico">Envio bloqueado</span>
+                : estadoMes?.conferido_em ? <span className="etiqueta etiqueta-positivo">Conferido</span>
                 : estadoMes?.completo_em ? <span className="etiqueta etiqueta-acao">Dado como completo</span>
                 : foraDoPrazo ? <span className="etiqueta etiqueta-atencao">Prazo terminado</span>
                 : <span className="etiqueta">Em aberto</span>}
             </div>
-            <EnviarDocumentos empresa={empresa.id} mes={mes} foraDoPrazo={foraDoPrazo} />
+            {fechado ? (
+              <p className="aviso">
+                {estadoMes?.fechado_em
+                  ? `O contabilista fechou este mês a ${dataHora(estadoMes.fechado_em)}: a informação está completa e não é preciso enviar mais nada.`
+                  : 'O contabilista bloqueou o envio de documentos para este mês. Se precisar de enviar alguma coisa, fale com ele nas mensagens.'}
+              </p>
+            ) : (
+              <EnviarDocumentos empresa={empresa.id} mes={mes} foraDoPrazo={foraDoPrazo} />
+            )}
           </section>
 
           <section className={p.cartao}>
             <div className={p.cabecalho}>
               <h2>Enviados ({lista.length})</h2>
-              {poupado > 0 && <p>Otimização de imagens: menos {tamanho(poupado)} guardados, sem perder legibilidade.</p>}
+              <div className={p.acoes}>
+                {poupado > 0 && <p>Imagens otimizadas: menos {tamanho(poupado)} guardados.</p>}
+                {lista.length > 0 && <a className="btn btn-secundario btn-sm" href={`${base}/documentos/comprovativo?mes=${mes}`}>Comprovativo de entrega (PDF)</a>}
+              </div>
             </div>
             {lista.length === 0 ? (
               <p className="pequeno suave">Ainda não há documentos deste mês.</p>
@@ -95,7 +114,7 @@ export default async function Documentos({ params, searchParams }: {
                         <div className={p.estado}>
                           {d.atrasado && <span className="etiqueta etiqueta-atencao">Fora do prazo</span>}
                           <span className={ESTADOS[d.estado]?.classe ?? 'etiqueta'}>{ESTADOS[d.estado]?.texto ?? d.estado}</span>
-                          {d.estado === 'recebido' && d.enviado_por === user.id && (
+                          {d.estado === 'recebido' && d.enviado_por === user.id && !fechado && (
                             <form action={eliminarDocumento}>
                               <input type="hidden" name="empresa" value={empresa.id} />
                               <input type="hidden" name="documento" value={d.id} />
@@ -117,7 +136,9 @@ export default async function Documentos({ params, searchParams }: {
         <div className={p.pilha}>
           <section className={p.cartao}>
             <h2>Terminou o mês?</h2>
-            {estadoMes?.conferido_em ? (
+            {fechado ? (
+              <p className="pequeno">{estadoMes?.fechado_em ? 'Mês fechado pelo contabilista: informação completa.' : 'Envio bloqueado pelo contabilista.'}</p>
+            ) : estadoMes?.conferido_em ? (
               <p className="pequeno">O contabilista conferiu os documentos deste mês a {dataHora(estadoMes.conferido_em)}.{estadoMes.nota ? ` Nota: ${estadoMes.nota}` : ''}</p>
             ) : estadoMes?.completo_em ? (
               <>

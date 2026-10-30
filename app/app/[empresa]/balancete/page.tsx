@@ -29,7 +29,7 @@ export default async function Balancete({ params, searchParams }: {
   const ate = Math.min(Number(pedido.ate) || maximo, maximo);
   const nivel = ['2', '4', '0'].includes(pedido.nivel || '') ? pedido.nivel! : '2';
 
-  const b = await obterBalancete(empresa.id, empresa.data_corte, ano, ate);
+  const b = await obterBalancete(empresa, ano, ate);
   if (b.ok) await registarExtracao(empresa.id, user.id, 'balancete', `Balancete consultado: janeiro a ${MESES[b.dados.ate - 1]} de ${ano}`);
   const consulta = `ano=${ano}&ate=${ate}&nivel=${nivel}`;
 

@@ -11,6 +11,9 @@ const TIPOS: Record<string, string> = {
   mes_conferido: 'Mês conferido', balancete: 'Balancete consultado', balancete_pdf: 'Balancete em PDF',
   balancete_xlsx: 'Balancete em Excel', extrato: 'Extrato consultado', saldos: 'Saldos consultados',
   clientes: 'Clientes consultados', fornecedores: 'Fornecedores consultados', bancos: 'Bancos consultados',
+  extrato_pdf: 'Extrato em PDF', extrato_xlsx: 'Extrato em Excel', comprovativo: 'Comprovativo de entrega',
+  ficha: 'Dados da empresa', logotipo: 'Logótipo', definicoes: 'Definições do contabilista', pessoal: 'Pessoal',
+  recibos: 'Recibos de vencimento', imposto: 'Impostos', descarga: 'Descarga',
 };
 
 export default async function Atividade({ params }: { params: Promise<{ empresa: string }> }) {

@@ -22,7 +22,7 @@ export default async function Contas({ params, searchParams }: { params: Promise
   const base = `/app/${empresa.id}`;
   const limite = ultimoMesFechado(empresa.data_corte);
   if (!limite) return <Indisponivel base={base} motivo="corte" erro="O contabilista ainda não definiu a data de corte desta empresa." />;
-  const b = await obterBalancete(empresa.id, empresa.data_corte, limite.ano, limite.mes);
+  const b = await obterBalancete(empresa, limite.ano, limite.mes);
   if (!b.ok) return <Indisponivel base={base} erro={b.erro} motivo={b.motivo} />;
   await registarExtracao(empresa.id, user.id, 'saldos', `Saldos das contas consultados (fim de ${mesAno(b.dados.fim)})`);
 

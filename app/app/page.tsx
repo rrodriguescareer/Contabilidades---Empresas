@@ -1,17 +1,25 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { session } from '@/lib/auth';
 import { signOut } from '@/lib/auth-actions';
 import { data } from '@/lib/formato';
+import { Marca } from '@/components/portal';
 import p from '@/components/paginas.module.css';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'As suas empresas' };
 
 /* A entrada: com uma empresa, vai-se direto a ela; com várias, escolhe-se. */
-export default async function Empresas() {
+export default async function Empresas({ searchParams }: { searchParams: Promise<{ escolher?: string }> }) {
   const { contexto } = await session();
-  if (contexto.empresas.length === 1 && !contexto.is_staff) redirect(`/app/${contexto.empresas[0].id}`);
+  const { escolher } = await searchParams;
+  if (!escolher) {
+    // Volta à última empresa aberta (o proxy guarda-a num cookie).
+    const ultima = (await cookies()).get('rr_empresa')?.value;
+    if (ultima && contexto.empresas.some((e) => e.id === ultima)) redirect(`/app/${ultima}`);
+    if (contexto.empresas.length === 1 && !contexto.is_staff) redirect(`/app/${contexto.empresas[0].id}`);
+  }
   const primeiro = (contexto.nome || '').split(/\s+/)[0];
   return (
     <main id="principal" className="envolve" style={{ paddingBlock: 'var(--e-7)', display: 'grid', gap: 'var(--e-6)' }}>
@@ -37,6 +45,7 @@ export default async function Empresas() {
         <div className={p.empresas}>
           {contexto.empresas.map((e) => (
             <Link key={e.id} href={`/app/${e.id}`} className={p.empresaCartao}>
+              <Marca empresa={e} tamanho="grande" />
               <strong>{e.nome}</strong>
               <span>NIF {e.nif}</span>
               <span>{e.data_corte ? `Contabilidade fechada até ${data(e.data_corte)}` : 'Data de corte por definir'}</span>

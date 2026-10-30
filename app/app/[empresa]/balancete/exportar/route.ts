@@ -4,7 +4,8 @@ import { empresaDaSessao } from '@/lib/auth';
 import { obterBalancete, registarExtracao } from '@/lib/contabilidade';
 import { aoNivel, NIVEIS } from '@/lib/contas';
 import { mesesPermitidos, ultimoMesFechado } from '@/lib/corte';
-import { balancetePdf, balanceteXlsx } from '@/lib/exportar';
+import { relatorioBalancete, relatorioPdf, relatorioXlsx } from '@/lib/exportar';
+import { logotipoPng } from '@/lib/ficheiros';
 import { MESES } from '@/lib/formato';
 
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,7 @@ export const dynamic = 'force-dynamic';
    servidor: os parâmetros do endereço nunca a alargam. */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ empresa: string }> }) {
   const { empresa: id } = await params;
-  const { user, empresa } = await empresaDaSessao(id);
+  const { client, user, empresa } = await empresaDaSessao(id);
   const q = request.nextUrl.searchParams;
   const formato = q.get('formato') === 'xlsx' ? 'xlsx' : 'pdf';
   const limite = ultimoMesFechado(empresa.data_corte);
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const ano = Number(q.get('ano')) || limite.ano;
   const ate = Math.min(Number(q.get('ate')) || 12, mesesPermitidos(ano, empresa.data_corte));
   const nivel = NIVEIS.find((n) => n.valor === q.get('nivel')) ?? NIVEIS[0];
-  const b = await obterBalancete(empresa.id, empresa.data_corte, ano, ate);
+  const b = await obterBalancete(empresa, ano, ate);
   if (!b.ok) {
     voltar.searchParams.set('ano', String(ano));
     return NextResponse.redirect(voltar);
@@ -33,12 +34,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const cabecalho = {
     empresa: empresa.nome, nif: empresa.nif, ano, ate: b.dados.ate, corte: b.dados.corte,
     exercicio: b.dados.exercicio, detalhe: nivel.nome, extraido_por: user.email,
-    extraido_em: new Date().toISOString(), referencia,
+    extraido_em: new Date().toISOString(), referencia, logotipo: await logotipoPng(client, empresa.logotipo),
   };
   const linhas = aoNivel(b.dados.linhas, Number(nivel.valor));
-  const corpo = formato === 'pdf'
-    ? await balancetePdf(cabecalho, linhas, b.dados.linhas)
-    : balanceteXlsx(cabecalho, linhas, b.dados.linhas);
+  const relatorio = relatorioBalancete(cabecalho, linhas, b.dados.linhas);
+  const corpo = formato === 'pdf' ? await relatorioPdf(relatorio) : relatorioXlsx(relatorio);
 
   await registarExtracao(empresa.id, user.id, `balancete_${formato}`,
     `Balancete ${formato === 'pdf' ? 'PDF' : 'Excel'} de janeiro a ${MESES[b.dados.ate - 1]} de ${ano}, data de corte ${b.dados.corte} (ref. ${referencia})`);

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { empresaDaSessao } from '@/lib/auth';
+import { empresaDaSessao, type EmpresaDoPortal } from '@/lib/auth';
 import { obterBalancete } from '@/lib/contabilidade';
 import { indicadores } from '@/lib/contas';
 import { ultimoMesFechado } from '@/lib/corte';
@@ -12,6 +12,7 @@ import p from '@/components/paginas.module.css';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Visão geral' };
 
+type ImpostoAberto = { id: string; tipo: string; periodo: string; valor: number | null; prazo: string | null; atrasado: boolean };
 type Resumo = {
   empresa: { id: string; nome: string; data_corte: string | null; data_corte_em: string | null; tem_cegid: boolean };
   hoje: string;
@@ -21,6 +22,7 @@ type Resumo = {
   ultima_mensagem: { corpo: string; em: string; do_gabinete: boolean } | null;
   prazos: { id: string; titulo: string; data: string; descricao: string | null; geral: boolean }[];
   atividade: { tipo: string; detalhe: string | null; em: string }[];
+  impostos: ImpostoAberto[];
 };
 
 export default async function VisaoGeral({ params }: { params: Promise<{ empresa: string }> }) {
@@ -59,7 +61,7 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
       </section>
 
       <Suspense fallback={<div className={p.numeros}>{[0, 1, 2, 3].map((i) => <span key={i} className="esqueleto" style={{ minBlockSize: '6rem' }} />)}</div>}>
-        <Indicadores empresa={empresa.id} corte={empresa.data_corte} base={base} />
+        <Indicadores empresa={empresa} base={base} />
       </Suspense>
 
       <div className={p.colunas}>
@@ -106,6 +108,20 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
         </div>
 
         <div className={p.pilha}>
+          {r.impostos.length > 0 && (
+            <section className={p.cartao}>
+              <div className={p.cabecalho}><h2>Impostos por pagar</h2><Link className="pequeno" href={`${base}/impostos`}>Ver todos</Link></div>
+              <ul className={p.lista}>
+                {r.impostos.map((i) => (
+                  <li key={i.id}>
+                    <div><strong>{i.tipo} · {i.periodo}</strong><small>{i.valor != null ? euros(Number(i.valor)) : 'Valor por indicar'}</small></div>
+                    <time style={i.atrasado ? { color: 'var(--critico)', fontWeight: 700 } : undefined}>{i.prazo ? `${i.atrasado ? 'Atrasado · ' : 'até '}${data(i.prazo)}` : '—'}</time>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <section className={p.cartao}>
             <div className={p.cabecalho}>
               <h2>Mensagens</h2>
@@ -156,10 +172,10 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
 
 /** Os números do último mês fechado, do Cegid. Chegam depois do resto da
     página, para o início nunca ficar à espera do Cegid. */
-async function Indicadores({ empresa, corte, base }: { empresa: string; corte: string | null; base: string }) {
-  const limite = ultimoMesFechado(corte);
+async function Indicadores({ empresa, base }: { empresa: EmpresaDoPortal; base: string }) {
+  const limite = ultimoMesFechado(empresa.data_corte);
   if (!limite) return null;
-  const b = await obterBalancete(empresa, corte, limite.ano, limite.mes);
+  const b = await obterBalancete(empresa, limite.ano, limite.mes);
   if (!b.ok) return <Indisponivel erro={b.erro} motivo={b.motivo} base={base} />;
   const n = indicadores(b.dados.linhas);
   const quando = `no fim de ${mesAno(b.dados.fim)}`;

@@ -20,6 +20,26 @@ o **mesmo** projeto Supabase do IRS e da Gestão (`rllajahyovpzndbbyvcd`).
   vêm. Storage privado (`empresas-documentos`).
 - **Mensagens** com o contabilista, **Prazos** (os do gabinete e o do dia 10) e
   **Atividade**.
+- **Impostos** (IRC, IVA, IRS, Segurança Social, outros): o contabilista publica
+  o período com a guia, a referência, o valor e o prazo; o cliente recebe email,
+  vê o que está em atraso, marca como pago e junta o comprovativo.
+- **Pessoal** (só para empresas com trabalhadores): admissões, cessações,
+  ausências e alterações com os dados e documentos de que o contabilista
+  precisa; e os recibos de vencimento de cada mês, um PDF por mês.
+- **Dados da empresa**: a ficha (NIF, CAE, regime de IVA, morada, NISS, IBAN,
+  representantes, contactos…), editável pelos dois lados, com histórico de cada
+  alteração; e o logótipo (WebP), usado no portal e em todos os documentos
+  gerados (balancetes, extratos, comprovativos de entrega, PDF e Excel).
+- **Alertas** do contabilista em cima de cada ecrã, até serem lidos.
+- Várias empresas por cliente: a lista fica sempre no topo do menu, com o
+  logótipo e o NIF, e a entrada volta à última empresa aberta.
+- **Uma só sessão** em irs., portal. e gestao.rr-contabilidade.com (cookies do
+  domínio partilhado, `lib/cookies-partilhados.ts`, igual nas três apps), com
+  botão para passar entre o IRS e o portal Empresas sem nova entrada.
+
+O contabilista define, na Gestão, o mês de início do acompanhamento (não há
+meses antes dele), os meses com o envio bloqueado e os meses fechados com a
+informação completa.
 
 ## A regra que define a plataforma
 
@@ -41,8 +61,11 @@ de *Empresa → Configurações → Dados API*) gravam-se na Gestão → Empresa
 empresa, e ficam cifradas (AES-256-GCM) em `integration_secrets` com o âmbito
 `cegid:<empresa>`. O portal autentica (authorization code sem ecrã, com
 renovação), escolhe o exercício fiscal (`PUT /entity_sub_switch`) e lê
-`trial_balance_period` e `account_statement`. As respostas ficam 6 horas em
-`empresa_cegid_cache` (só o servidor lê); mudar a data de corte apaga a cache.
+`trial_balance_period` e `account_statement`. As respostas ficam 30 dias na
+cache de dados do Next (`unstable_cache`), fora da base; a chave leva a data de
+corte e a versão Cegid da empresa (`companies.cegid_versao`), que a Gestão sobe
+ao mudar a data de corte ou as credenciais, ou a pedido. As falhas não ficam
+guardadas.
 
 ## Acessos
 
@@ -53,9 +76,9 @@ as empresas, como o cliente as vê.
 
 ## Base de dados
 
-Migração `gestao-clientes/supabase/migrations/202610300060_portal_empresas.sql`
-(fonte de verdade das três plataformas), com testes em
-`gestao-clientes/tests/empresas.test.mjs`.
+Migrações `gestao-clientes/supabase/migrations/202610300060_portal_empresas.sql`
+e `202610300061_empresas_completo.sql` (fonte de verdade das três
+plataformas), com testes em `gestao-clientes/tests/empresas.test.mjs`.
 
 ## Desenvolver
 
