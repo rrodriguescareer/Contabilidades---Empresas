@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { empresaDaSessao } from '@/lib/auth';
-import { comunicarPessoal } from '@/lib/acoes-empresa';
 import { data, dataHora, maiuscula, mesAno } from '@/lib/formato';
 import { ESTADOS_PESSOAL, rotuloPessoal, TIPOS_PESSOAL } from '@/lib/pessoal';
-import { FormAcao } from '@/components/form-acao';
+import { FormPessoal } from '@/components/form-pessoal';
 import p from '@/components/paginas.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -48,9 +47,7 @@ export default async function Pessoal({ params, searchParams }: { params: Promis
             ))}
           </nav>
           <p className="aviso">{def.nota}</p>
-          <FormAcao acao={comunicarPessoal} botao={`Enviar ${def.titulo.toLowerCase()}`} aDecorrer="A enviar…" limpar className={p.formulario}>
-            <input type="hidden" name="empresa" value={empresa.id} />
-            <input type="hidden" name="tipo" value={tipo} />
+          <FormPessoal key={tipo} empresa={empresa.id} comunicacao={tipo} botao={`Enviar ${def.titulo.toLowerCase()}`} documentos={def.documentos}>
             <div className={p.linhaCampos}>
               {def.campos.map((c) => (
                 <label key={c.nome} className="campo" style={c.tipo === 'area' ? { gridColumn: '1 / -1' } : undefined}>
@@ -70,12 +67,7 @@ export default async function Pessoal({ params, searchParams }: { params: Promis
                 </label>
               ))}
             </div>
-            <label className="campo">
-              <span>Documentos</span>
-              <input type="file" name="ficheiros" multiple accept="application/pdf,image/jpeg,image/png,image/webp" />
-              <small>{def.documentos} PDF ou fotografia, até 10 ficheiros.</small>
-            </label>
-          </FormAcao>
+          </FormPessoal>
         </section>
 
         <section className={p.cartao}>

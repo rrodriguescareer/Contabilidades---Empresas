@@ -1,64 +1,57 @@
 'use client';
-import { useActionState, useRef, useState } from 'react';
-import { enviarDocumentos, type Estado } from '@/lib/acoes';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { concluirDocumentos, prepararDocumentos, type Estado } from '@/lib/envios';
 import { CATEGORIAS } from '@/lib/categorias';
-import { tamanho } from '@/lib/formato';
+import { enviarTodos, useAvisarAoSair, useFicheiros, ZonaFicheiros } from './carregador';
 import p from './paginas.module.css';
 
-/** O envio dos documentos do mês: vários de uma vez, arrastando ou
-    escolhendo (no telemóvel, também fotografando). */
-export function EnviarDocumentos({ empresa, mes, foraDoPrazo }: { empresa: string; mes: string; foraDoPrazo: boolean }) {
-  const [estado, enviar, aEnviar] = useActionState<Estado, FormData>(async (anterior, form) => {
-    const r = await enviarDocumentos(anterior, form);
-    if (r?.ok) { setEscolhidos([]); if (entrada.current) entrada.current.value = ''; }
-    return r;
-  }, null);
-  const [escolhidos, setEscolhidos] = useState<File[]>([]);
-  const [arrastar, setArrastar] = useState(false);
-  const entrada = useRef<HTMLInputElement>(null);
+/** O envio dos documentos do mês: vários de uma vez, arrastando, escolhendo ou
+    fotografando. Cada ficheiro vai diretamente para o Storage, com o
+    progresso à vista; o tamanho já não depende do servidor. */
+export function EnviarDocumentos({ empresa, mes, foraDoPrazo, categoriaInicial = '', notaInicial = '' }: {
+  empresa: string; mes: string; foraDoPrazo: boolean; categoriaInicial?: string; notaInicial?: string;
+}) {
+  const router = useRouter();
+  const f = useFicheiros(20);
+  const [categoria, setCategoria] = useState(categoriaInicial);
+  const [nota, setNota] = useState(notaInicial);
+  const [estado, setEstado] = useState<Estado>(null);
+  const [aEnviar, setAEnviar] = useState(false);
+  useAvisarAoSair(aEnviar);
 
-  const escolher = (lista: FileList | null) => setEscolhidos(lista ? Array.from(lista) : []);
+  async function submeter(e: React.FormEvent) {
+    e.preventDefault();
+    if (!f.itens.some((i) => i.estado !== 'enviado')) return setEstado({ erro: 'Escolha pelo menos um ficheiro.' });
+    if (!categoria) return setEstado({ erro: 'Escolha o tipo de documentos.' });
+    setAEnviar(true);
+    setEstado(null);
+    try {
+      const r = await enviarTodos(f,
+        (anuncios) => prepararDocumentos(empresa, mes, categoria, nota, anuncios),
+        (ids, falhados) => concluirDocumentos(empresa, mes, ids, falhados));
+      setEstado(r);
+      if (r?.ok) { setNota(''); router.refresh(); }
+    } finally {
+      setAEnviar(false);
+    }
+  }
 
   return (
-    <form action={enviar} className={p.envio}>
-      <input type="hidden" name="empresa" value={empresa} />
-      <input type="hidden" name="mes" value={mes} />
-      <label
-        className={p.escolher}
-        data-arrastar={arrastar}
-        onDragOver={(e) => { e.preventDefault(); setArrastar(true); }}
-        onDragLeave={() => setArrastar(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setArrastar(false);
-          if (entrada.current && e.dataTransfer.files.length) {
-            entrada.current.files = e.dataTransfer.files;
-            escolher(e.dataTransfer.files);
-          }
-        }}
-      >
-        <strong>{escolhidos.length ? `${escolhidos.length} ${escolhidos.length === 1 ? 'ficheiro escolhido' : 'ficheiros escolhidos'}` : 'Escolher ficheiros ou fotografar'}</strong>
-        <span>PDF, JPEG, PNG ou WebP · até 20 de cada vez · as fotografias são otimizadas sem perder legibilidade</span>
-        <input ref={entrada} type="file" name="ficheiros" multiple required
-               accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
-               onChange={(e) => escolher(e.target.files)} />
-      </label>
-      {escolhidos.length > 0 && (
-        <ul className={p.escolhidos}>
-          {escolhidos.map((f, i) => <li key={i}><span>{f.name}</span><span className="suave">{tamanho(f.size)}</span></li>)}
-        </ul>
-      )}
+    <form onSubmit={submeter} className={p.envio} noValidate>
+      <ZonaFicheiros f={f} ativo={aEnviar} />
       <div className={p.campos}>
         <label className="campo">
           <span>Tipo de documentos</span>
-          <select name="categoria" className="entrada" required defaultValue="">
+          <select className="entrada" required value={categoria} onChange={(e) => setCategoria(e.target.value)} disabled={aEnviar}>
             <option value="" disabled>Escolha…</option>
             {CATEGORIAS.map((c) => <option key={c.valor} value={c.valor}>{c.nome} — {c.nota}</option>)}
           </select>
         </label>
         <label className="campo">
           <span>Nota para o contabilista (opcional)</span>
-          <input name="nota" className="entrada" maxLength={500} placeholder="Ex.: a fatura da EDP inclui dois meses" />
+          <input className="entrada" maxLength={500} value={nota} onChange={(e) => setNota(e.target.value)} disabled={aEnviar}
+                 placeholder="Ex.: a fatura da EDP inclui dois meses" />
         </label>
       </div>
       {foraDoPrazo && (
@@ -67,7 +60,7 @@ export function EnviarDocumentos({ empresa, mes, foraDoPrazo }: { empresa: strin
       {estado?.erro && <p className="aviso aviso-critico" role="alert">{estado.erro}</p>}
       {estado?.ok && <p className="aviso aviso-positivo" role="status">{estado.ok}</p>}
       <div className={p.acoes}>
-        <button className="btn" type="submit" disabled={aEnviar}>{aEnviar ? 'A enviar…' : 'Enviar documentos'}</button>
+        <button className="btn" type="submit" disabled={aEnviar}>{aEnviar ? 'A enviar… não feche a página' : 'Enviar documentos'}</button>
       </div>
     </form>
   );

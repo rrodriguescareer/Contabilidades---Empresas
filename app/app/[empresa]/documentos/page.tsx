@@ -15,6 +15,7 @@ export const metadata = { title: 'Documentos do mês' };
 type Documento = {
   id: string; categoria: string; nome: string; mime: string; tamanho: number; tamanho_original: number | null;
   estado: string; atrasado: boolean; resposta: string | null; nota: string | null; enviado_por: string; enviado_em: string;
+  revisto_em: string | null;
 };
 
 const ESTADOS: Record<string, { texto: string; classe: string }> = {
@@ -46,7 +47,7 @@ export default async function Documentos({ params, searchParams }: {
 
   const [{ data: documentos }, { data: estadoMes }] = await Promise.all([
     client.from('empresa_documentos')
-      .select('id,categoria,nome,mime,tamanho,tamanho_original,estado,atrasado,resposta,nota,enviado_por,enviado_em')
+      .select('id,categoria,nome,mime,tamanho,tamanho_original,estado,atrasado,resposta,nota,enviado_por,enviado_em,revisto_em')
       .eq('company_id', empresa.id).eq('mes', `${mes}-01`).neq('estado', 'pendente')
       .order('enviado_em', { ascending: false }),
     client.from('empresa_meses').select('completo_em,conferido_em,nota,bloqueado,fechado_em').eq('company_id', empresa.id).eq('mes', `${mes}-01`).maybeSingle(),
@@ -54,6 +55,9 @@ export default async function Documentos({ params, searchParams }: {
   const lista = (documentos ?? []) as Documento[];
   const fechado = Boolean(estadoMes?.fechado_em || estadoMes?.bloqueado);
   const poupado = lista.reduce((t, d) => t + Math.max(0, (d.tamanho_original ?? d.tamanho) - d.tamanho), 0);
+  // Os devolvidos que ainda não têm, depois deles, outro documento do mesmo tipo.
+  const devolvidos = lista.filter((d) => d.estado === 'devolvido'
+    && !lista.some((x) => x.categoria === d.categoria && x.estado !== 'devolvido' && d.revisto_em && x.enviado_em > d.revisto_em));
 
   return (
     <>
@@ -86,7 +90,15 @@ export default async function Documentos({ params, searchParams }: {
                   : 'O contabilista bloqueou o envio de documentos para este mês. Se precisar de enviar alguma coisa, fale com ele nas mensagens.'}
               </p>
             ) : (
-              <EnviarDocumentos empresa={empresa.id} mes={mes} foraDoPrazo={foraDoPrazo} />
+              <>
+                {devolvidos.length > 0 && (
+                  <div className={p.devolvidos} role="note">
+                    <strong>{devolvidos.length === 1 ? 'Um documento foi devolvido' : `${devolvidos.length} documentos foram devolvidos`}: envie a versão corrigida aqui.</strong>
+                    <ul>{devolvidos.map((d) => <li key={d.id}>{d.nome}{d.resposta ? ` — ${d.resposta}` : ''}</li>)}</ul>
+                  </div>
+                )}
+                <EnviarDocumentos key={mes} empresa={empresa.id} mes={mes} foraDoPrazo={foraDoPrazo} categoriaInicial={devolvidos[0]?.categoria ?? ''} />
+              </>
             )}
           </section>
 

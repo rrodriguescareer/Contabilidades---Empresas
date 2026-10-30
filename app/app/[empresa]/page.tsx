@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { empresaDaSessao, type EmpresaDoPortal } from '@/lib/auth';
 import { obterBalancete } from '@/lib/contabilidade';
 import { indicadores } from '@/lib/contas';
 import { ultimoMesFechado } from '@/lib/corte';
 import { data, dataHora, dataLonga, euros, maiuscula, mesAno } from '@/lib/formato';
 import { estadoDoMes, type Mes } from '@/lib/meses';
+import { TIPOS_PESSOAL } from '@/lib/pessoal';
 import { Indisponivel } from '@/components/indisponivel';
 import p from '@/components/paginas.module.css';
 
@@ -14,7 +16,7 @@ export const metadata = { title: 'Visão geral' };
 
 type ImpostoAberto = { id: string; tipo: string; periodo: string; valor: number | null; prazo: string | null; atrasado: boolean };
 type Resumo = {
-  empresa: { id: string; nome: string; data_corte: string | null; data_corte_em: string | null; tem_cegid: boolean };
+  empresa: { id: string; nome: string; data_corte: string | null; data_corte_em: string | null; tem_cegid: boolean; inicio: string | null };
   hoje: string;
   mes_em_curso: string;
   meses: Mes[];
@@ -35,6 +37,22 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
   }
   const r = bruto as Resumo;
   const emCurso = r.meses.find((m) => m.mes === r.mes_em_curso) ?? r.meses[0];
+  const atencao = await PorTratar(client, empresa.id, r, base);
+
+  // Um acompanhamento que ainda não começou: ainda não há meses para mostrar.
+  if (!emCurso) {
+    return (
+      <>
+        <section className={`${p.cartao} ${p.destaque}`}>
+          <span className={p.rotulo}>Acompanhamento</span>
+          <h2>{r.empresa.inicio ? `O acompanhamento começa em ${mesAno(r.empresa.inicio)}.` : 'Ainda sem meses para mostrar.'}</h2>
+          <p>A partir desse mês, os documentos podem ser enviados aqui. Entretanto, as mensagens e os dados da empresa já funcionam.</p>
+          <div className={p.acoes}><Link className="btn btn-secundario" href={`${base}/mensagens`}>Escrever ao contabilista</Link></div>
+        </section>
+        {atencao}
+      </>
+    );
+  }
   const prazo = new Date(Date.parse(emCurso.prazo) - 1000); // o fim do dia 10
   const dias = Math.ceil((Date.parse(emCurso.prazo) - Date.now()) / 86400000);
   const estado = estadoDoMes(emCurso);
@@ -59,6 +77,8 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
           {empresa.data_corte && <Link className="btn btn-secundario" href={`${base}/balancete`}>Tirar balancete</Link>}
         </div>
       </section>
+
+      {atencao}
 
       <Suspense fallback={<div className={p.numeros}>{[0, 1, 2, 3].map((i) => <span key={i} className="esqueleto" style={{ minBlockSize: '6rem' }} />)}</div>}>
         <Indicadores empresa={empresa} base={base} />
@@ -186,5 +206,84 @@ async function Indicadores({ empresa, base }: { empresa: EmpresaDoPortal; base: 
       <Link className={p.numero} href={`${base}/fornecedores`}><span>A pagar a fornecedores</span><strong>{euros(n.fornecedores)}</strong></Link>
       <Link className={p.numero} href={`${base}/balancete`}><span>Resultado de {limite.ano} até {mesAno(b.dados.fim).split(' de ')[0]}</span><strong>{euros(n.resultado)}</strong></Link>
     </div>
+  );
+}
+
+type Pendente = { chave: string; nivel: 'critico' | 'atencao' | 'acao'; titulo: string; texto?: string; href: string; botao: string };
+
+/** O que espera pela empresa, numa lista: impostos em atraso, documentos e
+    comunicações devolvidos que ainda não foram corrigidos, o mês em curso e as
+    mensagens por ler. Um devolvido sai da lista quando chega, depois dele,
+    outro documento do mesmo mês e tipo (ou outra comunicação do trabalhador). */
+async function PorTratar(client: SupabaseClient, empresa: string, r: Resumo, base: string) {
+  const [{ data: devolvidos }, { data: pessoal }] = await Promise.all([
+    client.from('empresa_documentos').select('id,nome,mes,categoria,resposta,revisto_em')
+      .eq('company_id', empresa).eq('estado', 'devolvido').order('revisto_em', { ascending: false }).limit(20),
+    client.from('empresa_pessoal').select('id,tipo,trabalhador,resposta,tratado_em')
+      .eq('company_id', empresa).eq('estado', 'devolvido').order('tratado_em', { ascending: false }).limit(10),
+  ]);
+  const meses = [...new Set((devolvidos ?? []).map((d) => d.mes))];
+  const [{ data: recentes }, { data: novos }] = await Promise.all([
+    meses.length
+      ? client.from('empresa_documentos').select('mes,categoria,enviado_em').eq('company_id', empresa).in('mes', meses).in('estado', ['recebido', 'visto'])
+      : Promise.resolve({ data: [] as { mes: string; categoria: string; enviado_em: string }[] }),
+    pessoal?.length
+      ? client.from('empresa_pessoal').select('tipo,trabalhador,criado_em').eq('company_id', empresa).neq('estado', 'devolvido')
+          .gte('criado_em', pessoal[pessoal.length - 1].tratado_em ?? '1970-01-01')
+      : Promise.resolve({ data: [] as { tipo: string; trabalhador: string; criado_em: string }[] }),
+  ]);
+
+  const lista: Pendente[] = [];
+  for (const i of r.impostos.filter((x) => x.atrasado)) {
+    lista.push({ chave: `i${i.id}`, nivel: 'critico', titulo: `${i.tipo} ${i.periodo}: prazo de pagamento ultrapassado`,
+      texto: `${i.valor != null ? euros(Number(i.valor)) : 'Valor no portal'}${i.prazo ? ` · era até ${data(i.prazo)}` : ''}. Se já pagou, marque como pago e junte o comprovativo.`,
+      href: `${base}/impostos?tipo=por_pagar`, botao: 'Ver impostos' });
+  }
+  for (const d of (devolvidos ?? []).filter((d) => !(recentes ?? []).some((x) => x.mes === d.mes && x.categoria === d.categoria && d.revisto_em && x.enviado_em > d.revisto_em)).slice(0, 5)) {
+    lista.push({ chave: `d${d.id}`, nivel: 'critico', titulo: `Documento devolvido: ${d.nome}`,
+      texto: `${maiuscula(mesAno(d.mes))}${d.resposta ? ` · ${d.resposta}` : ''}`,
+      href: `${base}/documentos?mes=${String(d.mes).slice(0, 7)}`, botao: 'Enviar a correção' });
+  }
+  for (const x of (pessoal ?? []).filter((x) => !(novos ?? []).some((n) => n.tipo === x.tipo && n.trabalhador === x.trabalhador && x.tratado_em && n.criado_em > x.tratado_em)).slice(0, 3)) {
+    lista.push({ chave: `p${x.id}`, nivel: 'atencao', titulo: `${TIPOS_PESSOAL[x.tipo]?.titulo ?? 'Comunicação'} de ${x.trabalhador} devolvida`,
+      texto: x.resposta ?? 'Veja o que falta e volte a comunicar.', href: `${base}/pessoal?tipo=${x.tipo}`, botao: 'Corrigir' });
+  }
+  const emCurso = r.meses.find((m) => m.mes === r.mes_em_curso);
+  if (emCurso) {
+    const e = estadoDoMes(emCurso);
+    if (e.estado === 'aberto' || e.estado === 'atraso') {
+      lista.push({ chave: 'mes', nivel: e.estado === 'atraso' ? 'critico' : 'acao',
+        titulo: emCurso.documentos ? `Documentos de ${mesAno(emCurso.mes)}: quando terminar, avise o contabilista` : `Documentos de ${mesAno(emCurso.mes)} por enviar`,
+        texto: emCurso.documentos ? `Já enviou ${emCurso.documentos}. Um clique em «Já enviei tudo deste mês» diz ao contabilista que pode avançar.` : `O prazo é o dia 10 do mês seguinte.`,
+        href: `${base}/documentos?mes=${emCurso.mes.slice(0, 7)}`, botao: emCurso.documentos ? 'Abrir o mês' : 'Enviar documentos' });
+    }
+  }
+  if (r.mensagens_por_ler > 0) {
+    lista.push({ chave: 'msg', nivel: 'acao', titulo: r.mensagens_por_ler === 1 ? 'Uma mensagem do contabilista por ler' : `${r.mensagens_por_ler} mensagens do contabilista por ler`,
+      href: `${base}/mensagens`, botao: 'Ler' });
+  }
+
+  return (
+    <section className={p.cartao} aria-labelledby="por-tratar">
+      <div className={p.cabecalho}>
+        <h2 id="por-tratar">Da sua parte</h2>
+        {lista.length > 0 && <span className="etiqueta etiqueta-acao">{lista.length} {lista.length === 1 ? 'assunto' : 'assuntos'}</span>}
+      </div>
+      {lista.length === 0 ? (
+        <p className={p.emDia}>Está tudo em dia. Não há nada pendente da sua parte.</p>
+      ) : (
+        <ul className={p.pendentes}>
+          {lista.map((x) => (
+            <li key={x.chave} data-nivel={x.nivel}>
+              <div>
+                <strong>{x.titulo}</strong>
+                {x.texto && <small>{x.texto}</small>}
+              </div>
+              <Link className="btn btn-secundario btn-sm" href={x.href}>{x.botao}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

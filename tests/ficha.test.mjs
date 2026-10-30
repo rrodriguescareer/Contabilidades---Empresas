@@ -51,3 +51,24 @@ test('session cookies are shared only under rr-contabilidade.com', () => {
   assert.equal(dominioDosCookies('localhost:3003'), undefined);
   assert.equal(opcoesDosCookies('gestao.rr-contabilidade.com').secure, true);
 });
+
+test('absences and changes keep their own "tipo" field: the kind of message travels as "comunicacao"', () => {
+  // A mesma ordem do formulário: os campos escondidos vêm primeiro.
+  const ausencia = new FormData();
+  ausencia.append('empresa', '00000000-0000-0000-0000-000000000000');
+  ausencia.append('comunicacao', 'ausencia');
+  ausencia.append('trabalhador', 'Ana Silva');
+  ausencia.append('tipo', 'Férias');
+  ausencia.append('de', '2026-11-02');
+  ausencia.append('ate', '2026-11-06');
+  const a = lerPessoal(ausencia.get('comunicacao'), ausencia);
+  assert.deepEqual(a, { trabalhador: 'Ana Silva', dados: { tipo: 'Férias', de: '2026-11-02', ate: '2026-11-06' } });
+
+  const alteracao = new FormData();
+  alteracao.append('comunicacao', 'alteracao');
+  alteracao.append('trabalhador', 'Rui Costa');
+  alteracao.append('tipo', 'Vencimento');
+  alteracao.append('efeito', '2026-12-01');
+  alteracao.append('descricao', 'Passa a 1 100 €');
+  assert.equal(lerPessoal(alteracao.get('comunicacao'), alteracao).dados.tipo, 'Vencimento');
+});
