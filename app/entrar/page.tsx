@@ -3,6 +3,7 @@ import { Submeter } from '@/components/forms';
 import { AEntrar } from '@/components/chegada';
 import { EcraAutenticacao } from '@/lib/auth-view';
 import { signIn } from '@/lib/auth-actions';
+import { ContinuarCom } from '@/components/continuar-com';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Entrar' };
@@ -17,6 +18,7 @@ export default async function Entrar({ searchParams }: { searchParams: Promise<{
       mensagem={parametros.mensagem}
       rodape={<Link href="/recuperar">Esqueci-me da palavra-passe</Link>}
     >
+      <ContinuarCom destino={parametros.destino ?? ''} nota="Use a conta Google ou Apple com o mesmo email que deu ao contabilista." />
       <form action={signIn}>
         <input type="hidden" name="destino" value={parametros.destino ?? ''} />
         <label className="campo">

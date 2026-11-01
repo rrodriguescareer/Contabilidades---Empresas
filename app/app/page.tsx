@@ -30,6 +30,7 @@ export default async function Empresas({ searchParams }: { searchParams: Promise
         <img src="/rr.svg" alt="RR." width={259} height={142} style={{ height: 30, width: 'auto' }} />
         <div className="linha">
           {contexto.acesso_irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className="btn btn-secundario btn-sm" />}
+          <Link className="btn btn-secundario btn-sm" href="/conta">A minha conta</Link>
           <form action={signOut}><button className="btn btn-secundario btn-sm" type="submit">Sair</button></form>
         </div>
       </div>

@@ -12,12 +12,14 @@ export const EMAIL_GABINETE = process.env.EMAIL_GABINETE || RESPOSTA;
 export const GESTAO = (process.env.NEXT_PUBLIC_GESTAO_URL || 'https://gestao.rr-contabilidade.com').replace(/\/$/, '');
 const LOGOTIPO = (process.env.NEXT_PUBLIC_IRS_URL || 'https://irs.rr-contabilidade.com').replace(/\/$/, '') + '/email-rr.png';
 
-type Aviso = { chave: string; para: string; assunto: string; titulo: string; paragrafos: string[]; botao?: { texto: string; url: string } };
+type Aviso = { chave: string; para: string; assunto: string; titulo: string; paragrafos: string[]; botao?: { texto: string; url: string }; destaque?: { rotulo: string; valor: string } };
+export const PORTAL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://portal.rr-contabilidade.com').replace(/\/$/, '');
 
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 function html(e: Aviso) {
-  const p = e.paragrafos.map((t) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#33475b">${esc(t)}</p>`).join('');
+  const p = e.paragrafos.map((t) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#33475b">${esc(t)}</p>`).join('')
+    + (e.destaque ? `<p style="margin:6px 0 18px;padding:14px 18px;border-radius:12px;background:#f3f7fd;font-size:13px;color:#33475b">${esc(e.destaque.rotulo)}<br><strong style="font-size:26px;letter-spacing:6px;color:#0a2344">${esc(e.destaque.valor)}</strong></p>` : '');
   const botao = e.botao
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 6px"><tr><td style="background:#2867f8;border-radius:999px"><a href="${esc(e.botao.url)}" style="display:inline-block;padding:13px 26px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none">${esc(e.botao.texto)}</a></td></tr></table>`
     : '';
@@ -32,12 +34,21 @@ function html(e: Aviso) {
 }
 
 export async function avisarGabinete(e: Omit<Aviso, 'para'>) {
+  return enviar({ ...e, para: EMAIL_GABINETE });
+}
+
+/** Um email à própria pessoa (códigos e avisos de segurança). */
+export async function enviarAoUtilizador(e: Aviso) {
+  return enviar(e);
+}
+
+async function enviar(e: Aviso) {
   const chave = process.env.RESEND_API_KEY || '';
   if (!/^re_/.test(chave) || !adminConfigured()) return false;
   const admin = adminClient();
   try {
     const { data: novo } = await admin.from('emails')
-      .upsert({ chave: e.chave.slice(0, 200), para: EMAIL_GABINETE, assunto: e.assunto.slice(0, 250) }, { onConflict: 'chave', ignoreDuplicates: true })
+      .upsert({ chave: e.chave.slice(0, 200), para: e.para, assunto: e.assunto.slice(0, 250) }, { onConflict: 'chave', ignoreDuplicates: true })
       .select('id');
     const id = novo?.[0]?.id;
     if (!id) return false; // já tinha saído
@@ -45,8 +56,8 @@ export async function avisarGabinete(e: Omit<Aviso, 'para'>) {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json', 'Idempotency-Key': `rr-${id}` },
       body: JSON.stringify({
-        from: REMETENTE, to: [EMAIL_GABINETE], reply_to: RESPOSTA, subject: e.assunto, html: html({ ...e, para: EMAIL_GABINETE }),
-        text: [e.titulo, '', ...e.paragrafos, ...(e.botao ? ['', `${e.botao.texto}: ${e.botao.url}`] : [])].join('\n'),
+        from: REMETENTE, to: [e.para], reply_to: RESPOSTA, subject: e.assunto, html: html(e),
+        text: [e.titulo, '', ...e.paragrafos, ...(e.destaque ? ['', `${e.destaque.rotulo}: ${e.destaque.valor}`] : []), ...(e.botao ? ['', `${e.botao.texto}: ${e.botao.url}`] : [])].join('\n'),
       }),
       cache: 'no-store',
     });

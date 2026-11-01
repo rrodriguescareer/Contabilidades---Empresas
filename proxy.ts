@@ -55,4 +55,4 @@ export async function proxy(request: NextRequest) {
   return partilharCookiesDeSessao(request, response);
 }
 
-export const config = { matcher: ['/app', '/app/:path*', '/nova-password', '/sem-acesso', '/entrar'] };
+export const config = { matcher: ['/app', '/app/:path*', '/nova-password', '/sem-acesso', '/entrar', '/verificar', '/seguranca', '/seguranca/:path*', '/conta'] };

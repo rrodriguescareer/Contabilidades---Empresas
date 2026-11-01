@@ -25,7 +25,9 @@ export async function signIn(form: FormData) {
   (await cookies()).set('rr_chegada', '1', {
     maxAge: 30, path: '/', sameSite: 'lax', httpOnly: false, secure: process.env.NODE_ENV === 'production',
   });
-  redirect(interno || '/app');
+  // Com o segundo fator ativo, primeiro o código; sem ele, a pergunta «quer ativar?».
+  const { depoisDeEntrar } = await import('./depois-de-entrar');
+  redirect(await depoisDeEntrar(client, interno || '/app'));
 }
 
 export async function signOut() {

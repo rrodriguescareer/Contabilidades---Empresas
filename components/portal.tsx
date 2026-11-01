@@ -94,6 +94,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
             </span>
             {empresas.length > 1 && <Link href="/app?escolher=1" className={`${e.botaoTopo} ${e.soTelemovel}`}>Trocar de empresa</Link>}
             {irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className={`${e.botaoTopo} ${e.soTelemovel}`} />}
+            <Link href="/conta" className={e.botaoTopo}>A minha conta</Link>
             <form action={signOut} className={e.sairTopo}>
               <button type="submit" className={e.botaoTopo}>Sair</button>
             </form>

@@ -15,6 +15,7 @@ export type Contexto = {
   nome: string | null;
   is_staff: boolean;
   ativo: boolean;
+  aal_em_falta?: boolean;
   acesso_empresas: boolean;
   acesso_irs: boolean;
   empresas: EmpresaDoPortal[];
@@ -33,6 +34,8 @@ export const identity = cache(async function identity() {
   if (falha || !data?.id) redirect(erro('Não foi possível carregar a conta.'));
   const contexto = data as Contexto;
   if (!contexto.ativo) redirect(erro('Acesso bloqueado ou email por confirmar. Contacte o contabilista.'));
+  // Com o segundo fator ativo, a sessão só chega aos dados depois do código.
+  if (contexto.aal_em_falta) redirect('/verificar');
   return { client, user: { id: contexto.id, email: contexto.email }, contexto };
 });
 

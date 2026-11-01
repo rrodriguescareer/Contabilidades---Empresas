@@ -42,7 +42,12 @@ export async function GET(request:NextRequest){
   if(code){
     const client=await supabase();
     const {error}=await client.auth.exchangeCodeForSession(code);
-    if(!error)return NextResponse.redirect(new URL(next,request.url));
+    // Uma entrada (Google, Apple): o segundo fator ou a pergunta vêm primeiro.
+    if(!error){
+      const {depoisDeEntrar}=await import('@/lib/depois-de-entrar');
+      const seguir=next==='/nova-password'?next:await depoisDeEntrar(client,next);
+      return NextResponse.redirect(new URL(seguir,request.url));
+    }
     console.info(JSON.stringify({event:'rr_auth_callback',causa:'troca_codigo',erro:error.message}));
     return falhar(request,'Abra a ligação no mesmo browser onde fez o pedido, ou peça uma nova.');
   }
