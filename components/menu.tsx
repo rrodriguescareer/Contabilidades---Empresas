@@ -21,7 +21,7 @@ export function Menu({ base, porLer, porPagar, novidades = {}, ocultar = [] }: {
   return (
     <nav className={e.menu} aria-label="Secções">
       {SECOES.filter((s) => !ocultar.includes(s.segmento)).map((s) => (
-        <Link key={s.segmento} href={s.segmento ? `${base}/${s.segmento}` : base} className={e.item}
+        <Link prefetch={false} key={s.segmento} href={s.segmento ? `${base}/${s.segmento}` : base} className={e.item}
               aria-current={atual === s.segmento || (s.segmento === 'contas' && atual === 'extrato') ? 'page' : undefined}>
           <Icone nome={s.icone} />
           <span>{s.nome}</span>

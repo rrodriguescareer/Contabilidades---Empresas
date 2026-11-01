@@ -18,7 +18,7 @@ export default async function Conta({ searchParams }: { searchParams: Promise<{ 
   return (
     <main id="principal" className="envolve" style={{ paddingBlock: 'var(--e-6) var(--e-8)', display: 'grid', gap: 'var(--e-5)', maxInlineSize: '46rem' }}>
       <div className="linha-entre">
-        <Link href="/app" className="btn btn-discreto btn-sm">← Voltar ao portal</Link>
+        <Link prefetch={false} href="/app" className="btn btn-discreto btn-sm">← Voltar ao portal</Link>
         <form action={signOut}><button className="btn btn-secundario btn-sm" type="submit">Sair</button></form>
       </div>
       <div className="pilha pilha-2">
@@ -43,7 +43,7 @@ export default async function Conta({ searchParams }: { searchParams: Promise<{ 
               Proteja a conta com um código do telemóvel, além da palavra-passe. Usa uma aplicação gratuita (Google
               Authenticator, Microsoft Authenticator ou as Palavras-passe do iPhone) e demora um minuto.
             </p>
-            <div><Link className="btn" href="/seguranca/ativar?destino=/conta">Ativar</Link></div>
+            <div><Link prefetch={false} className="btn" href="/seguranca/ativar?destino=/conta">Ativar</Link></div>
           </>
         )}
       </section>

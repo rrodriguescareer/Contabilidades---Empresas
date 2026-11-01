@@ -65,7 +65,7 @@ export default async function Documentos({ params, searchParams }: {
       <Avisos erro={pedido.erro} mensagem={pedido.mensagem} />
       <nav className={p.fichas} aria-label="Mês dos documentos">
         {meses.map((m) => (
-          <Link key={m} className={p.ficha} aria-current={m === mes} href={`${base}/documentos?mes=${m}`}>{maiuscula(mesAno(`${m}-01`))}</Link>
+          <Link prefetch={false} key={m} className={p.ficha} aria-current={m === mes} href={`${base}/documentos?mes=${m}`}>{maiuscula(mesAno(`${m}-01`))}</Link>
         ))}
       </nav>
 

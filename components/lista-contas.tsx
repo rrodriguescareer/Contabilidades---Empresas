@@ -66,7 +66,7 @@ export async function ListaContas({ id, secao, procura }: { id: string; secao: S
                       <td className={`${p.num} ${p.mov}`}>{valor(l.debito)}</td>
                       <td className={`${p.num} ${p.mov}`}>{valor(l.credito)}</td>
                       <td className={`${p.num} ${s < -0.005 ? p.credor : ''}`} title={s < -0.005 ? cfg.negativo : cfg.positivo}>{valor(s)}</td>
-                      <td><Link href={`${base}/extrato?conta=${l.conta}&ano=${b.dados.ano}`}>Histórico</Link></td>
+                      <td><Link prefetch={false} href={`${base}/extrato?conta=${l.conta}&ano=${b.dados.ano}`}>Histórico</Link></td>
                     </tr>
                   );
                 })}

@@ -46,10 +46,10 @@ export default async function Impostos({ params, searchParams }: {
         <div className={p.numero}><span>Com o prazo ultrapassado</span><strong>{atrasados}</strong></div>
       </div>
       <nav className={p.abas} aria-label="Tipo de imposto">
-        <Link className={p.aba} aria-current={tipo === 'por_pagar'} href={`${base}/impostos?tipo=por_pagar`}>Por pagar{porPagar.length ? <span>{porPagar.length}</span> : null}</Link>
+        <Link prefetch={false} className={p.aba} aria-current={tipo === 'por_pagar'} href={`${base}/impostos?tipo=por_pagar`}>Por pagar{porPagar.length ? <span>{porPagar.length}</span> : null}</Link>
         {Object.entries(TIPOS_IMPOSTO).map(([k, nome]) => {
           const n = porPagar.filter((i) => i.tipo === k).length;
-          return <Link key={k} className={p.aba} aria-current={k === tipo} href={`${base}/impostos?tipo=${k}`}>{nome}{n ? <span>{n}</span> : null}</Link>;
+          return <Link prefetch={false} key={k} className={p.aba} aria-current={k === tipo} href={`${base}/impostos?tipo=${k}`}>{nome}{n ? <span>{n}</span> : null}</Link>;
         })}
       </nav>
       {mostrar.length === 0 ? (

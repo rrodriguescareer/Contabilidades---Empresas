@@ -43,9 +43,9 @@ export default async function Contas({ params, searchParams }: { params: Promise
         </form>
       </div>
       <nav className={p.fichas} aria-label="Classes">
-        <Link className={p.ficha} aria-current={!classe} href={`${base}/contas`}>Todas</Link>
+        <Link prefetch={false} className={p.ficha} aria-current={!classe} href={`${base}/contas`}>Todas</Link>
         {Object.entries(CLASSES).filter(([k]) => presentes.has(k)).map(([k, nome]) => (
-          <Link key={k} className={p.ficha} aria-current={classe === k} href={`${base}/contas?classe=${k}`}>{k} · {nome}</Link>
+          <Link prefetch={false} key={k} className={p.ficha} aria-current={classe === k} href={`${base}/contas?classe=${k}`}>{k} · {nome}</Link>
         ))}
       </nav>
       <p className={p.carimbo}>
@@ -63,7 +63,7 @@ export default async function Contas({ params, searchParams }: { params: Promise
             <tbody>
               {contas.map((l) => (
                 <tr key={l.conta}>
-                  <td className={p.conta}><Link href={`${base}/extrato?conta=${l.conta}&ano=${b.dados.ano}`}>{l.conta}</Link></td>
+                  <td className={p.conta}><Link prefetch={false} href={`${base}/extrato?conta=${l.conta}&ano=${b.dados.ano}`}>{l.conta}</Link></td>
                   <td>{l.descricao}</td>
                   <td className={p.num}>{l.saldo > 0.005 ? valor(l.saldo) : ''}</td>
                   <td className={`${p.num} ${p.credor}`}>{l.saldo < -0.005 ? valor(-l.saldo) : ''}</td>

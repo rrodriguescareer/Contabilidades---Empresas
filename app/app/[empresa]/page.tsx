@@ -47,7 +47,7 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
           <span className={p.rotulo}>Acompanhamento</span>
           <h2>{r.empresa.inicio ? `O acompanhamento começa em ${mesAno(r.empresa.inicio)}.` : 'Ainda sem meses para mostrar.'}</h2>
           <p>A partir desse mês, os documentos podem ser enviados aqui. Entretanto, as mensagens e os dados da empresa já funcionam.</p>
-          <div className={p.acoes}><Link className="btn btn-secundario" href={`${base}/mensagens`}>Escrever ao contabilista</Link></div>
+          <div className={p.acoes}><Link prefetch={false} className="btn btn-secundario" href={`${base}/mensagens`}>Escrever ao contabilista</Link></div>
         </section>
         {atencao}
       </>
@@ -73,8 +73,8 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
             : `${emCurso.documentos} ${emCurso.documentos === 1 ? 'documento enviado' : 'documentos enviados'}${emCurso.atrasados ? `, ${emCurso.atrasados} fora do prazo` : ''}${emCurso.devolvidos ? `; ${emCurso.devolvidos} devolvido${emCurso.devolvidos === 1 ? '' : 's'} para corrigir` : ''}.`}
         </p>
         <div className={p.acoes}>
-          <Link className="btn" href={`${base}/documentos?mes=${emCurso.mes.slice(0, 7)}`}>Enviar documentos</Link>
-          {empresa.data_corte && <Link className="btn btn-secundario" href={`${base}/balancete`}>Tirar balancete</Link>}
+          <Link prefetch={false} className="btn" href={`${base}/documentos?mes=${emCurso.mes.slice(0, 7)}`}>Enviar documentos</Link>
+          {empresa.data_corte && <Link prefetch={false} className="btn btn-secundario" href={`${base}/balancete`}>Tirar balancete</Link>}
         </div>
       </section>
 
@@ -96,7 +96,7 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
                 const e = estadoDoMes(m);
                 return (
                   <li key={m.mes}>
-                    <Link className={p.mes} data-estado={e.estado} href={`${base}/documentos?mes=${m.mes.slice(0, 7)}`}>
+                    <Link prefetch={false} className={p.mes} data-estado={e.estado} href={`${base}/documentos?mes=${m.mes.slice(0, 7)}`}>
                       <strong>{maiuscula(mesAno(m.mes))}</strong>
                       <span>{m.documentos} {m.documentos === 1 ? 'documento' : 'documentos'}</span>
                       <span>{e.texto}</span>
@@ -130,7 +130,7 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
         <div className={p.pilha}>
           {r.impostos.length > 0 && (
             <section className={p.cartao}>
-              <div className={p.cabecalho}><h2>Impostos por pagar</h2><Link className="pequeno" href={`${base}/impostos`}>Ver todos</Link></div>
+              <div className={p.cabecalho}><h2>Impostos por pagar</h2><Link prefetch={false} className="pequeno" href={`${base}/impostos`}>Ver todos</Link></div>
               <ul className={p.lista}>
                 {r.impostos.map((i) => (
                   <li key={i.id}>
@@ -156,11 +156,11 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
             ) : (
               <p className="pequeno suave">Ainda sem mensagens. Escreva sempre que tiver uma dúvida.</p>
             )}
-            <Link className="btn btn-secundario btn-sm" href={`${base}/mensagens`}>Abrir mensagens</Link>
+            <Link prefetch={false} className="btn btn-secundario btn-sm" href={`${base}/mensagens`}>Abrir mensagens</Link>
           </section>
 
           <section className={p.cartao}>
-            <div className={p.cabecalho}><h2>Próximos prazos</h2><Link className="pequeno" href={`${base}/prazos`}>Ver todos</Link></div>
+            <div className={p.cabecalho}><h2>Próximos prazos</h2><Link prefetch={false} className="pequeno" href={`${base}/prazos`}>Ver todos</Link></div>
             {r.prazos.length ? (
               <ul className={p.lista}>
                 {r.prazos.map((x) => (
@@ -173,7 +173,7 @@ export default async function VisaoGeral({ params }: { params: Promise<{ empresa
           </section>
 
           <section className={p.cartao}>
-            <div className={p.cabecalho}><h2>Atividade recente</h2><Link className="pequeno" href={`${base}/atividade`}>Ver tudo</Link></div>
+            <div className={p.cabecalho}><h2>Atividade recente</h2><Link prefetch={false} className="pequeno" href={`${base}/atividade`}>Ver tudo</Link></div>
             {r.atividade.length ? (
               <ul className={p.lista}>
                 {r.atividade.map((a, i) => (
@@ -201,10 +201,10 @@ async function Indicadores({ empresa, base }: { empresa: EmpresaDoPortal; base: 
   const quando = `no fim de ${mesAno(b.dados.fim)}`;
   return (
     <div className={p.numeros}>
-      <Link className={p.numero} href={`${base}/bancos`}><span>Bancos e caixa {quando}</span><strong>{euros(n.disponivel)}</strong></Link>
-      <Link className={p.numero} href={`${base}/clientes`}><span>A receber de clientes</span><strong>{euros(n.clientes)}</strong></Link>
-      <Link className={p.numero} href={`${base}/fornecedores`}><span>A pagar a fornecedores</span><strong>{euros(n.fornecedores)}</strong></Link>
-      <Link className={p.numero} href={`${base}/balancete`}><span>Resultado de {limite.ano} até {mesAno(b.dados.fim).split(' de ')[0]}</span><strong>{euros(n.resultado)}</strong></Link>
+      <Link prefetch={false} className={p.numero} href={`${base}/bancos`}><span>Bancos e caixa {quando}</span><strong>{euros(n.disponivel)}</strong></Link>
+      <Link prefetch={false} className={p.numero} href={`${base}/clientes`}><span>A receber de clientes</span><strong>{euros(n.clientes)}</strong></Link>
+      <Link prefetch={false} className={p.numero} href={`${base}/fornecedores`}><span>A pagar a fornecedores</span><strong>{euros(n.fornecedores)}</strong></Link>
+      <Link prefetch={false} className={p.numero} href={`${base}/balancete`}><span>Resultado de {limite.ano} até {mesAno(b.dados.fim).split(' de ')[0]}</span><strong>{euros(n.resultado)}</strong></Link>
     </div>
   );
 }
@@ -279,7 +279,7 @@ async function PorTratar(client: SupabaseClient, empresa: string, r: Resumo, bas
                 <strong>{x.titulo}</strong>
                 {x.texto && <small>{x.texto}</small>}
               </div>
-              <Link className="btn btn-secundario btn-sm" href={x.href}>{x.botao}</Link>
+              <Link prefetch={false} className="btn btn-secundario btn-sm" href={x.href}>{x.botao}</Link>
             </li>
           ))}
         </ul>

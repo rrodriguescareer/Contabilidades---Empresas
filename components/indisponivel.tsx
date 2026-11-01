@@ -20,7 +20,7 @@ export function Indisponivel({ erro, motivo, base }: { erro: string; motivo: str
       <h2>{titulo}</h2>
       <p className="suave">{erro}</p>
       {nota && <p className="pequeno suave">{nota}</p>}
-      <Link className="btn btn-secundario btn-sm" href={`${base}/mensagens`}>Falar com o contabilista</Link>
+      <Link prefetch={false} className="btn btn-secundario btn-sm" href={`${base}/mensagens`}>Falar com o contabilista</Link>
     </div>
   );
 }

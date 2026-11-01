@@ -21,7 +21,7 @@ export default async function Pessoal({ params, searchParams }: { params: Promis
       <div className="vazio">
         <strong>Esta empresa não tem trabalhadores registados</strong>
         <p>Se passou a ter, marque-o em Dados da empresa, ou peça ao contabilista. A secção de pessoal fica logo disponível.</p>
-        <Link className="btn btn-secundario" href={`${base}/dados`}>Abrir os dados da empresa</Link>
+        <Link prefetch={false} className="btn btn-secundario" href={`${base}/dados`}>Abrir os dados da empresa</Link>
       </div>
     );
   }
@@ -44,7 +44,7 @@ export default async function Pessoal({ params, searchParams }: { params: Promis
           <div className={p.cabecalho}><h2>Comunicar ao contabilista</h2></div>
           <nav className={p.abas} aria-label="Tipo de comunicação">
             {Object.entries(TIPOS_PESSOAL).map(([k, t]) => (
-              <Link key={k} className={p.aba} aria-current={k === tipo} href={`${base}/pessoal?tipo=${k}`}>{t.titulo}</Link>
+              <Link prefetch={false} key={k} className={p.aba} aria-current={k === tipo} href={`${base}/pessoal?tipo=${k}`}>{t.titulo}</Link>
             ))}
           </nav>
           <p className="aviso">{def.nota}</p>

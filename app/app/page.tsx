@@ -30,7 +30,7 @@ export default async function Empresas({ searchParams }: { searchParams: Promise
         <img src="/rr.svg" alt="RR." width={259} height={142} style={{ height: 30, width: 'auto' }} />
         <div className="linha">
           {contexto.acesso_irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className="btn btn-secundario btn-sm" />}
-          <Link className="btn btn-secundario btn-sm" href="/conta">A minha conta</Link>
+          <Link prefetch={false} className="btn btn-secundario btn-sm" href="/conta">A minha conta</Link>
           <form action={signOut}><button className="btn btn-secundario btn-sm" type="submit">Sair</button></form>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default async function Empresas({ searchParams }: { searchParams: Promise
       ) : (
         <div className={p.empresas}>
           {contexto.empresas.map((e) => (
-            <Link key={e.id} href={`/app/${e.id}`} className={p.empresaCartao}>
+            <Link prefetch={false} key={e.id} href={`/app/${e.id}`} className={p.empresaCartao}>
               <Marca empresa={e} tamanho="grande" />
               <strong>{e.nome}</strong>
               <span>NIF {e.nif}</span>

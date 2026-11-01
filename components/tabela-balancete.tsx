@@ -24,7 +24,7 @@ export function TabelaBalancete({ linhas, todas, base, ano }: { linhas: LinhaBal
           {linhas.map((l) => (
             <tr key={l.conta} data-nivel={Math.min(l.conta.length, 3)}>
               <td className={p.conta}>
-                <Link href={`${base}/extrato?conta=${l.conta}&ano=${ano}`} title="Ver os movimentos desta conta">{l.conta}</Link>
+                <Link prefetch={false} href={`${base}/extrato?conta=${l.conta}&ano=${ano}`} title="Ver os movimentos desta conta">{l.conta}</Link>
               </td>
               <td>{l.descricao}</td>
               <td className={`${p.num} ${p.mov}`}>{valor(l.debito)}</td>

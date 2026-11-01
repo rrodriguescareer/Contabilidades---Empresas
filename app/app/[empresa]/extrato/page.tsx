@@ -19,7 +19,7 @@ export default async function Extrato({ params, searchParams }: { params: Promis
   const conta = (pedido.conta || '').trim();
   if (!limite || !empresa.data_corte) return <Indisponivel base={base} motivo="corte" erro="O contabilista ainda não definiu a data de corte desta empresa." />;
   if (!/^\d{1,15}$/.test(conta)) {
-    return <p className="aviso">Escolha uma conta em <Link href={`${base}/contas`}>Contas e saldos</Link>, Clientes, Fornecedores ou Bancos.</p>;
+    return <p className="aviso">Escolha uma conta em <Link prefetch={false} href={`${base}/contas`}>Contas e saldos</Link>, Clientes, Fornecedores ou Bancos.</p>;
   }
   const anos = [...new Set([Number(empresa.data_corte.slice(0, 4)), ...anosDisponiveis(empresa.data_corte)])].sort((a, b) => b - a);
   const ano = anos.includes(Number(pedido.ano)) ? Number(pedido.ano) : anos[0];

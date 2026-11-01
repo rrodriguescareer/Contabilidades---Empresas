@@ -43,13 +43,13 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
     <div className={e.portal}>
       <Chegada ativo={chegada} nome={nome} />
       <aside className={e.lateral}>
-        <Link href="/app?escolher=1" className={e.marca} aria-label="RR. — as suas empresas">
+        <Link prefetch={false} href="/app?escolher=1" className={e.marca} aria-label="RR. — as suas empresas">
           <img src="/rr-branco.svg" alt="" width={259} height={142} />
         </Link>
 
         <nav className={e.empresas} aria-label="Empresas">
           {empresas.map((x) => (
-            <Link key={x.id} href={`/app/${x.id}`} className={e.empresa} aria-current={x.id === empresa.id ? 'true' : undefined}>
+            <Link prefetch={false} key={x.id} href={`/app/${x.id}`} className={e.empresa} aria-current={x.id === empresa.id ? 'true' : undefined}>
               <Marca empresa={x} />
               <span>
                 <strong>{x.nome}</strong>
@@ -68,7 +68,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
             <span>Contabilista Certificado · Cédula 145854</span>
           </div>
           <div className={e.contactos}>
-            <Link href={`${base}/mensagens`}>Enviar mensagem</Link>
+            <Link prefetch={false} href={`${base}/mensagens`}>Enviar mensagem</Link>
             <a href="mailto:contabilidade.rubenrodrigues@gmail.com">Email</a>
           </div>
         </div>
@@ -92,9 +92,9 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
               <Icone nome="cadeado" tamanho={15} />
               {empresa.data_corte ? `Contabilidade fechada até ${data(empresa.data_corte)}` : 'Data de corte por definir'}
             </span>
-            {empresas.length > 1 && <Link href="/app?escolher=1" className={`${e.botaoTopo} ${e.soTelemovel}`}>Trocar de empresa</Link>}
+            {empresas.length > 1 && <Link prefetch={false} href="/app?escolher=1" className={`${e.botaoTopo} ${e.soTelemovel}`}>Trocar de empresa</Link>}
             {irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className={`${e.botaoTopo} ${e.soTelemovel}`} />}
-            <Link href="/conta" className={e.botaoTopo}>A minha conta</Link>
+            <Link prefetch={false} href="/conta" className={e.botaoTopo}>A minha conta</Link>
             <form action={signOut} className={e.sairTopo}>
               <button type="submit" className={e.botaoTopo}>Sair</button>
             </form>
