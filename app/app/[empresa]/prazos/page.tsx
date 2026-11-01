@@ -11,6 +11,7 @@ type Prazo = { id: string; titulo: string; descricao: string | null; data: strin
 export default async function Prazos({ params }: { params: Promise<{ empresa: string }> }) {
   const { empresa: id } = await params;
   const { client, empresa } = await empresaDaSessao(id);
+  await client.rpc('marcar_visto', { p_area: `empresas:prazos:${empresa.id}` });
   const hoje = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date());
   const desde = new Date(Date.parse(hoje) - 45 * 86400000).toISOString().slice(0, 10);
 

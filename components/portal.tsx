@@ -18,6 +18,7 @@ type Props = {
   porLer: number;
   porPagar: number;
   irs: boolean;
+  novidades: Record<string, number>;
   alertas: React.ReactNode;
   children: React.ReactNode;
 };
@@ -35,7 +36,7 @@ export function Marca({ empresa, tamanho = 'normal' }: { empresa: EmpresaDoPorta
 
 /* O portal de uma empresa: as empresas sempre à vista no topo do menu, as
    secções, o contabilista; em cima, a data de corte e os alertas. */
-export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPagar, irs, alertas, children }: Props) {
+export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPagar, irs, novidades, alertas, children }: Props) {
   const base = `/app/${empresa.id}`;
   const chegada = (await cookies()).get('rr_chegada')?.value === '1';
   return (
@@ -58,7 +59,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
           ))}
         </nav>
 
-        <Menu base={base} porLer={porLer} porPagar={porPagar} ocultar={empresa.tem_trabalhadores ? [] : ['pessoal']} />
+        <Menu base={base} porLer={porLer} porPagar={porPagar} novidades={novidades} ocultar={empresa.tem_trabalhadores ? [] : ['pessoal']} />
 
         <div className={e.contabilista}>
           <img src="/ruben-rodrigues.webp" alt="Rúben Meirinho Rodrigues" width={96} height={96} className={e.avatar} />
@@ -72,7 +73,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
           </div>
         </div>
 
-        {irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className={e.outroPortal} />}
+        {irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className={e.outroPortal} icone />}
         <form action={signOut} className={e.sairForm}>
           <button type="submit" className={e.sair}><Icone nome="sair" tamanho={18} /><span>Sair</span></button>
         </form>

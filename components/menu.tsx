@@ -7,7 +7,9 @@ import { SECOES } from './secoes';
 import e from './portal.module.css';
 
 /** O menu da empresa. O separador atual vem do segmento do endereço. */
-export function Menu({ base, porLer, porPagar, ocultar = [] }: { base: string; porLer: number; porPagar: number; ocultar?: string[] }) {
+export function Menu({ base, porLer, porPagar, novidades = {}, ocultar = [] }: {
+  base: string; porLer: number; porPagar: number; novidades?: Record<string, number>; ocultar?: string[];
+}) {
   const atual = useSelectedLayoutSegment() ?? '';
 
   // No telemóvel o menu é uma faixa que desliza: o separador atual fica à vista.
@@ -25,6 +27,12 @@ export function Menu({ base, porLer, porPagar, ocultar = [] }: { base: string; p
           <span>{s.nome}</span>
           {s.segmento === 'mensagens' && porLer > 0 && <span className={e.contagem} aria-label={`${porLer} por ler`}>{porLer}</span>}
           {s.segmento === 'impostos' && porPagar > 0 && <span className={e.contagem} aria-label={`${porPagar} por pagar`}>{porPagar}</span>}
+          {/* O que mudou desde a última visita; na secção aberta já não conta. */}
+          {s.segmento !== atual && (novidades[s.segmento] ?? 0) > 0 && (
+            <span className={e.contagem} aria-label={s.segmento === '' ? 'Alertas do contabilista por ler' : `${novidades[s.segmento]} novidades`}>
+              {s.segmento === '' ? '!' : novidades[s.segmento]}
+            </span>
+          )}
         </Link>
       ))}
     </nav>

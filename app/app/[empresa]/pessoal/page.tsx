@@ -14,6 +14,7 @@ type Ficheiro = { id: string; ref_id: string; nome: string; contexto: string };
 export default async function Pessoal({ params, searchParams }: { params: Promise<{ empresa: string }>; searchParams: Promise<{ tipo?: string }> }) {
   const [{ empresa: id }, pedido] = await Promise.all([params, searchParams]);
   const { client, empresa } = await empresaDaSessao(id);
+  await client.rpc('marcar_visto', { p_area: `empresas:pessoal:${empresa.id}` });
   const base = `/app/${empresa.id}`;
   if (!empresa.tem_trabalhadores) {
     return (

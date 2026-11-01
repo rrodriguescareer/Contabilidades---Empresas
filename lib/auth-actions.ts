@@ -30,7 +30,8 @@ export async function signIn(form: FormData) {
 
 export async function signOut() {
   const client = await supabase();
-  await client.auth.signOut();
+  // Só esta sessão: sair aqui não desliga o telemóvel nem outro browser.
+  await client.auth.signOut({ scope: 'local' });
   redirect('/entrar');
 }
 

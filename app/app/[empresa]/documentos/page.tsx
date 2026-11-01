@@ -30,6 +30,7 @@ export default async function Documentos({ params, searchParams }: {
 }) {
   const [{ empresa: id }, pedido] = await Promise.all([params, searchParams]);
   const { client, user, empresa } = await empresaDaSessao(id);
+  await client.rpc('marcar_visto', { p_area: `empresas:documentos:${empresa.id}` });
   const base = `/app/${empresa.id}`;
 
   const atual = mesAtualEmLisboa();

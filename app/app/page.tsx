@@ -5,6 +5,9 @@ import { session } from '@/lib/auth';
 import { signOut } from '@/lib/auth-actions';
 import { data } from '@/lib/formato';
 import { Marca } from '@/components/portal';
+import { TrocarPortal } from '@/components/trocar-portal';
+
+const IRS = (process.env.NEXT_PUBLIC_IRS_URL || 'https://irs.rr-contabilidade.com').replace(/\/$/, '');
 import p from '@/components/paginas.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +28,10 @@ export default async function Empresas({ searchParams }: { searchParams: Promise
     <main id="principal" className="envolve" style={{ paddingBlock: 'var(--e-7)', display: 'grid', gap: 'var(--e-6)' }}>
       <div className="linha-entre">
         <img src="/rr.svg" alt="RR." width={259} height={142} style={{ height: 30, width: 'auto' }} />
-        <form action={signOut}><button className="btn btn-secundario btn-sm" type="submit">Sair</button></form>
+        <div className="linha">
+          {contexto.acesso_irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className="btn btn-secundario btn-sm" />}
+          <form action={signOut}><button className="btn btn-secundario btn-sm" type="submit">Sair</button></form>
+        </div>
       </div>
       <div className="pilha pilha-2">
         <h1>{primeiro ? `Olá, ${primeiro}.` : 'As suas empresas.'}</h1>

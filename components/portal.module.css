@@ -68,8 +68,13 @@
 .topoEmpresa { display: flex; align-items: center; gap: var(--e-3); min-inline-size: 0; }
 
 .outroPortal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
+  flex: none;
   inline-size: 100%;
-  padding: .62rem 1rem;
+  padding: .72rem 1rem;
   border: 1px solid #2a4673;
   border-radius: .7rem;
   background: transparent;
