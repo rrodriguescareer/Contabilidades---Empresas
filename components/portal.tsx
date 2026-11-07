@@ -65,7 +65,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
           <img src="/ruben-rodrigues.webp" alt="Rúben Meirinho Rodrigues" width={96} height={96} className={e.avatar} />
           <div>
             <strong>Rúben Meirinho Rodrigues</strong>
-            <span>Contabilista Certificado · Cédula 145854</span>
+            <span>Contabilista Certificado · Cédula 106297</span>
           </div>
           <div className={e.contactos}>
             <Link prefetch={false} href={`${base}/mensagens`}>Enviar mensagem</Link>

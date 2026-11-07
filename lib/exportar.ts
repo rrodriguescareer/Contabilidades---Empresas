@@ -61,7 +61,7 @@ const comoTexto = (v: string | number | null, numero?: boolean) =>
 export async function relatorioPdf(r: Relatorio) {
   const pdf = await PDFDocument.create();
   pdf.setTitle(`${r.titulo} — ${r.empresa}`);
-  pdf.setAuthor('Rúben Meirinho Rodrigues, Contabilista Certificado n.º 145854');
+  pdf.setAuthor('Rúben Meirinho Rodrigues, Contabilista Certificado n.º 106297');
   if (r.carimbo) pdf.setSubject(`${r.carimbo.titulo}`);
   pdf.setCreator('RR. Empresas');
   const normal = await pdf.embedFont(StandardFonts.Helvetica);
@@ -137,7 +137,7 @@ export async function relatorioPdf(r: Relatorio) {
   if (!r.linhas.length) texto(pagina, 'Sem linhas neste período.', M + 4, y, { cor: SUAVE });
 
   paginas.forEach((p, i) => {
-    texto(p, 'Rúben Meirinho Rodrigues · Contabilista Certificado n.º 145854 · Rua Augusto Simões 845, 4470-147 Maia', M, 20, { tamanho: 7.5, cor: SUAVE });
+    texto(p, 'Rúben Meirinho Rodrigues · Contabilista Certificado n.º 106297 · Rua Augusto Simões 845, 4470-147 Maia', M, 20, { tamanho: 7.5, cor: SUAVE });
     const n = `Página ${i + 1} de ${paginas.length} · ${r.rodape}`;
     texto(p, n, L - M - normal.widthOfTextAtSize(seguro(n), 7.5), 20, { tamanho: 7.5, cor: SUAVE });
   });
@@ -182,7 +182,7 @@ export function relatorioXlsx(r: Relatorio) {
     ...r.linhas.map((l): Celula[] => l.valores.map((v) => (l.destaque && v != null && v !== '' ? n(v) : v))),
     ...(r.totais ? [r.totais.map((v) => (v == null || v === '' ? null : n(v)))] : []),
     [],
-    ['Rúben Meirinho Rodrigues · Contabilista Certificado n.º 145854'],
+    ['Rúben Meirinho Rodrigues · Contabilista Certificado n.º 106297'],
   ];
   const larguras = r.colunas.map((c) => Math.max(10, Math.round(c.largura / 5)));
   const logo = r.logotipo;
