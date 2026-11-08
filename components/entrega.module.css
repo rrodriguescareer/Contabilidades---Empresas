@@ -1,0 +1,49 @@
+/* A entrega de documentos pedidos pelo contabilista. */
+.entrega { display: grid; gap: var(--e-5); }
+.progresso { display: grid; gap: .4rem; }
+.progressoTexto { display: flex; justify-content: space-between; align-items: baseline; gap: var(--e-3); font-size: var(--t-sm); }
+.progressoTexto span { color: var(--texto-suave); }
+.barra { display: block; block-size: .45rem; border-radius: 999px; background: var(--superficie-afundada); overflow: hidden; }
+.barra i { display: block; block-size: 100%; border-radius: inherit; background: var(--positivo); transition: inline-size .2s ease; }
+
+.grupo { display: grid; gap: var(--e-2); }
+.grupo h3 { font-size: var(--t-sm); letter-spacing: 0; color: var(--texto-suave); font-weight: 700; }
+.linhas { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.linha {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-3); align-items: center;
+  padding: .8rem var(--e-4); background: var(--superficie); border: 1px solid var(--linha); border-radius: .9rem;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.linha[data-arrastar] { border-color: var(--acao); background: var(--acao-suave); }
+.linha[data-fase='entregue'] { background: var(--positivo-suave); border-color: color-mix(in srgb, var(--positivo) 25%, transparent); }
+.linhaTexto { display: grid; gap: .15rem; min-inline-size: 0; }
+.linhaTexto strong { font-size: var(--t-base); font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+.linhaTexto > span:not(.barra):not(.erro) { font-size: var(--t-sm); color: var(--texto-suave); }
+.erro { font-size: var(--t-sm); color: var(--critico); }
+.escolher { cursor: pointer; white-space: nowrap; }
+.escolher:focus-within { outline: 2px solid var(--acao); outline-offset: 2px; }
+.aCorrer { font-size: var(--t-sm); font-weight: 650; color: var(--texto-suave); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.bloco { display: grid; gap: var(--e-3); padding: var(--e-4) var(--e-5); background: var(--superficie); border: 1px solid var(--linha); border-radius: 1rem; }
+.bloco h3 { font-size: var(--t-md); letter-spacing: -.02em; }
+.nota { font-size: var(--t-sm); color: var(--texto-suave); }
+
+@media (max-width: 480px) {
+  .linha { grid-template-columns: minmax(0, 1fr); }
+  .escolher { justify-self: start; }
+}
+
+/* A página pública, aberta a partir do email. */
+.pagina { min-block-size: 100dvh; display: grid; align-content: start; justify-items: center; gap: var(--e-5); padding: var(--e-6) var(--e-4) var(--e-8); background: var(--fundo); }
+.folha { inline-size: min(100%, 46rem); display: grid; gap: var(--e-5); }
+.cabeca { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); }
+.cabeca img { block-size: 2rem; inline-size: auto; }
+.cabeca span { font-size: var(--t-sm); font-weight: 650; color: var(--texto-suave); }
+.titulo { display: grid; gap: .4rem; }
+.titulo h1 { font-size: var(--t-2xl); letter-spacing: -.04em; }
+.titulo p { color: var(--texto-suave); }
+.prazo { justify-self: start; padding: .3rem .75rem; border-radius: 999px; background: var(--atencao-suave); color: #7a4d05; font-size: var(--t-sm); font-weight: 650; }
+.rodape { display: grid; gap: .25rem; padding-block-start: var(--e-4); border-block-start: 1px solid var(--linha); font-size: var(--t-xs); color: var(--texto-suave); }
+.estado { display: grid; gap: var(--e-3); padding: var(--e-6) var(--e-5); background: var(--superficie); border: 1px solid var(--linha); border-radius: 1rem; text-align: center; justify-items: center; }
+.estado h1 { font-size: var(--t-xl); letter-spacing: -.03em; }
+.estado p { color: var(--texto-suave); max-inline-size: 44ch; }

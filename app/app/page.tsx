@@ -5,6 +5,7 @@ import { session } from '@/lib/auth';
 import { signOut } from '@/lib/auth-actions';
 import { data } from '@/lib/formato';
 import { Marca } from '@/components/portal';
+import { EscolherEmpresa } from '@/components/escolher-empresa';
 import { TrocarPortal } from '@/components/trocar-portal';
 
 const IRS = (process.env.NEXT_PUBLIC_IRS_URL || 'https://irs.rr-contabilidade.com').replace(/\/$/, '');
@@ -49,16 +50,10 @@ export default async function Empresas({ searchParams }: { searchParams: Promise
           <a className="btn" href="mailto:contabilidade.rubenrodrigues@gmail.com">Escrever ao contabilista</a>
         </div>
       ) : (
-        <div className={p.empresas}>
-          {contexto.empresas.map((e) => (
-            <Link prefetch={false} key={e.id} href={`/app/${e.id}`} className={p.empresaCartao}>
-              <Marca empresa={e} tamanho="grande" />
-              <strong>{e.nome}</strong>
-              <span>NIF {e.nif}</span>
-              <span>{e.data_corte ? `Contabilidade fechada até ${data(e.data_corte)}` : 'Data de corte por definir'}</span>
-            </Link>
-          ))}
-        </div>
+        <EscolherEmpresa empresas={contexto.empresas.map((e) => ({
+          id: e.id, nome: e.nome, nif: e.nif, marca: <Marca empresa={e} tamanho="grande" />,
+          corte: e.data_corte ? `Contabilidade fechada até ${data(e.data_corte)}` : 'Data de corte por definir',
+        }))} />
       )}
     </main>
   );

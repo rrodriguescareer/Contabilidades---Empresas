@@ -5,8 +5,11 @@ import { CATEGORIAS } from '@/lib/categorias';
 import { dataHora, dataLonga, maiuscula, mesAno, tamanho } from '@/lib/formato';
 import { mesAtualEmLisboa, mesesParaEnviar, prazoDoMes } from '@/lib/meses';
 import { Avisos } from '@/components/avisos';
+import { EntregaPendencias } from '@/components/entrega-pendencias';
 import { EnviarDocumentos } from '@/components/enviar-documentos';
 import { Submeter } from '@/components/forms';
+import { concluirNoPortal, prepararNoPortal } from '@/lib/entregas';
+import type { PendenciaEntrega } from '@/lib/entrega-servidor';
 import p from '@/components/paginas.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -46,13 +49,15 @@ export default async function Documentos({ params, searchParams }: {
   const prazo = prazoDoMes(mes);
   const foraDoPrazo = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Lisbon' }).format(new Date()) > prazo;
 
-  const [{ data: documentos }, { data: estadoMes }] = await Promise.all([
+  const [{ data: documentos }, { data: estadoMes }, { data: pedido2 }] = await Promise.all([
     client.from('empresa_documentos')
       .select('id,categoria,nome,mime,tamanho,tamanho_original,estado,atrasado,resposta,nota,enviado_por,enviado_em,revisto_em')
       .eq('company_id', empresa.id).eq('mes', `${mes}-01`).neq('estado', 'pendente')
       .order('enviado_em', { ascending: false }),
     client.from('empresa_meses').select('completo_em,conferido_em,nota,bloqueado,fechado_em').eq('company_id', empresa.id).eq('mes', `${mes}-01`).maybeSingle(),
+    client.rpc('portal_pendencias', { empresa: empresa.id }),
   ]);
+  const pedidoDocs = pedido2 as { dia_limite: string; recebidas: number; pendencias: PendenciaEntrega[] } | null;
   const lista = (documentos ?? []) as Documento[];
   const fechado = Boolean(estadoMes?.fechado_em || estadoMes?.bloqueado);
   const poupado = lista.reduce((t, d) => t + Math.max(0, (d.tamanho_original ?? d.tamanho) - d.tamanho), 0);
@@ -63,6 +68,19 @@ export default async function Documentos({ params, searchParams }: {
   return (
     <>
       <Avisos erro={pedido.erro} mensagem={pedido.mensagem} />
+      {pedidoDocs && pedidoDocs.pendencias.length > 0 && (
+        <section className={p.cartao} id="pedidos">
+          <div className={p.cabecalho}>
+            <div>
+              <h2>O contabilista pediu estes documentos</h2>
+              <p>Prazo: até {dataLonga(pedidoDocs.dia_limite)}.</p>
+            </div>
+            <span className="etiqueta etiqueta-atencao">{pedidoDocs.pendencias.length} em falta</span>
+          </div>
+          <EntregaPendencias compacto pendencias={pedidoDocs.pendencias} recebidas={pedidoDocs.recebidas}
+                             preparar={prepararNoPortal.bind(null, empresa.id)} concluir={concluirNoPortal.bind(null, empresa.id)} />
+        </section>
+      )}
       <nav className={p.fichas} aria-label="Mês dos documentos">
         {meses.map((m) => (
           <Link prefetch={false} key={m} className={p.ficha} aria-current={m === mes} href={`${base}/documentos?mes=${m}`}>{maiuscula(mesAno(`${m}-01`))}</Link>

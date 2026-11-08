@@ -302,8 +302,10 @@ a.numero:hover { border-color: var(--acao); }
 .empresas { display: grid; gap: var(--e-4); grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr)); }
 .empresaCartao {
   display: grid;
-  gap: .4rem;
-  padding: var(--e-5);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--e-4);
+  align-items: center;
+  padding: var(--e-4) var(--e-5);
   border: 1px solid var(--linha);
   border-radius: 1rem;
   background: var(--superficie);
@@ -312,8 +314,15 @@ a.numero:hover { border-color: var(--acao); }
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 .empresaCartao:hover { border-color: var(--acao); box-shadow: 0 6px 20px -12px rgb(10 35 68 / .35); }
-.empresaCartao strong { font-size: var(--t-lg); font-family: var(--fonte-titulo); letter-spacing: -.02em; }
-.empresaCartao span { font-size: var(--t-sm); color: var(--texto-suave); }
+.empresaCartao > svg { color: var(--texto-ténue); }
+.empresaCartao:hover > svg { color: var(--acao-forte); }
+.empresaMarca { display: grid; place-items: center; inline-size: 3.25rem; block-size: 3.25rem; }
+.empresaMarca img { inline-size: 100% !important; block-size: 100% !important; max-inline-size: none !important; object-fit: contain; border-radius: .6rem; }
+.empresaMarca > span { inline-size: 3.25rem !important; block-size: 3.25rem !important; font-size: 1rem !important; border-radius: .7rem; }
+.empresaTexto { display: grid; gap: .05rem; min-inline-size: 0; }
+.empresaTexto strong { font-size: var(--t-lg); font-family: var(--fonte-titulo); letter-spacing: -.02em; line-height: 1.2; overflow-wrap: anywhere; }
+.empresaTexto span { font-size: var(--t-sm); color: var(--texto-suave); }
+.empresaTexto small { font-size: var(--t-xs); color: var(--texto-ténue); }
 
 @media print {
   .filtros, .acoes, .naoImprimir { display: none !important; }

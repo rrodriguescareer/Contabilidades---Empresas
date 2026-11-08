@@ -216,11 +216,12 @@ type Pendente = { chave: string; nivel: 'critico' | 'atencao' | 'acao'; titulo: 
     mensagens por ler. Um devolvido sai da lista quando chega, depois dele,
     outro documento do mesmo mês e tipo (ou outra comunicação do trabalhador). */
 async function PorTratar(client: SupabaseClient, empresa: string, r: Resumo, base: string) {
-  const [{ data: devolvidos }, { data: pessoal }] = await Promise.all([
+  const [{ data: devolvidos }, { data: pessoal }, { data: pedidoDocs }] = await Promise.all([
     client.from('empresa_documentos').select('id,nome,mes,categoria,resposta,revisto_em')
       .eq('company_id', empresa).eq('estado', 'devolvido').order('revisto_em', { ascending: false }).limit(20),
     client.from('empresa_pessoal').select('id,tipo,trabalhador,resposta,tratado_em')
       .eq('company_id', empresa).eq('estado', 'devolvido').order('tratado_em', { ascending: false }).limit(10),
+    client.rpc('portal_pendencias', { empresa }),
   ]);
   const meses = [...new Set((devolvidos ?? []).map((d) => d.mes))];
   const [{ data: recentes }, { data: novos }] = await Promise.all([
@@ -234,6 +235,11 @@ async function PorTratar(client: SupabaseClient, empresa: string, r: Resumo, bas
   ]);
 
   const lista: Pendente[] = [];
+  const pedidos = pedidoDocs as { dia_limite: string; pendencias: unknown[] } | null;
+  if (pedidos?.pendencias.length) {
+    lista.push({ chave: 'pedidos', nivel: 'critico', titulo: pedidos.pendencias.length === 1 ? 'O contabilista pediu um documento' : `O contabilista pediu ${pedidos.pendencias.length} documentos`,
+      texto: `Prazo: até ${data(pedidos.dia_limite)}.`, href: `${base}/documentos#pedidos`, botao: 'Entregar' });
+  }
   for (const i of r.impostos.filter((x) => x.atrasado)) {
     lista.push({ chave: `i${i.id}`, nivel: 'critico', titulo: `${i.tipo} ${i.periodo}: prazo de pagamento ultrapassado`,
       texto: `${i.valor != null ? euros(Number(i.valor)) : 'Valor no portal'}${i.prazo ? ` · era até ${data(i.prazo)}` : ''}. Se já pagou, marque como pago e junte o comprovativo.`,

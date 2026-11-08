@@ -21,7 +21,7 @@ export default async function LayoutEmpresa({ children, params }: { children: Re
   return (
     <Portal empresa={empresa} empresas={contexto.empresas} nome={contexto.nome} gabinete={contexto.is_staff}
             porLer={porLer ?? 0} porPagar={porPagar ?? 0} irs={contexto.acesso_irs}
-            novidades={{ documentos: n.documentos ?? 0, pessoal: n.pessoal ?? 0, prazos: n.prazos ?? 0, '': n.alertas ?? 0 }}
+            novidades={{ documentos: (n.documentos ?? 0) + (n.em_falta ?? 0), pessoal: n.pessoal ?? 0, prazos: n.prazos ?? 0, '': n.alertas ?? 0 }}
             alertas={<Alertas client={client} empresa={empresa.id} utilizador={user.id} />}>
       {children}
     </Portal>

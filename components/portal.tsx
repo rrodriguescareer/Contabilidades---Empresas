@@ -6,6 +6,7 @@ import { data } from '@/lib/formato';
 import { Chegada } from './chegada';
 import { Icone } from './icones';
 import { Menu, Titulo } from './menu';
+import { SeletorEmpresa } from './seletor-empresa';
 import { logotipoUrl } from './secoes';
 import { TrocarPortal } from './trocar-portal';
 import e from './portal.module.css';
@@ -34,11 +35,12 @@ export function Marca({ empresa, tamanho = 'normal' }: { empresa: EmpresaDoPorta
     : <span className={e.iniciais} data-tamanho={tamanho} aria-hidden="true">{iniciais || 'E'}</span>;
 }
 
-/* O portal de uma empresa: as empresas sempre à vista no topo do menu, as
-   secções, o contabilista; em cima, a data de corte e os alertas. */
+/* O portal de uma empresa: a empresa atual no topo do menu (e as outras a um
+   clique), as secções, o contabilista; em cima, a data de corte e os alertas. */
 export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPagar, irs, novidades, alertas, children }: Props) {
   const base = `/app/${empresa.id}`;
   const chegada = (await cookies()).get('rr_chegada')?.value === '1';
+  const opcoes = empresas.map((x) => ({ id: x.id, nome: x.nome, nif: x.nif, marca: <Marca empresa={x} />, pessoal: Boolean(x.tem_trabalhadores) }));
   return (
     <div className={e.portal}>
       <Chegada ativo={chegada} nome={nome} />
@@ -47,17 +49,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
           <img src="/rr-branco.svg" alt="" width={259} height={142} />
         </Link>
 
-        <nav className={e.empresas} aria-label="Empresas">
-          {empresas.map((x) => (
-            <Link prefetch={false} key={x.id} href={`/app/${x.id}`} className={e.empresa} aria-current={x.id === empresa.id ? 'true' : undefined}>
-              <Marca empresa={x} />
-              <span>
-                <strong>{x.nome}</strong>
-                <small>NIF {x.nif}</small>
-              </span>
-            </Link>
-          ))}
-        </nav>
+        <div className={e.seletorLateral}><SeletorEmpresa atual={empresa.id} opcoes={opcoes} /></div>
 
         <Menu base={base} porLer={porLer} porPagar={porPagar} novidades={novidades} ocultar={empresa.tem_trabalhadores ? [] : ['pessoal']} />
 
@@ -82,6 +74,7 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
       <div className={e.principal}>
         {gabinete && <p className={e.vistaGabinete}>Vista do contabilista: está a ver o portal como o cliente o vê.</p>}
         <header className={e.topo}>
+          {empresas.length > 1 && <div className={e.seletorTopo}><SeletorEmpresa atual={empresa.id} opcoes={opcoes} variante="topo" /></div>}
           <div className={e.topoEmpresa}>
             <Marca empresa={empresa} tamanho="grande" />
             <Titulo />
@@ -92,7 +85,6 @@ export async function Portal({ empresa, empresas, nome, gabinete, porLer, porPag
               <Icone nome="cadeado" tamanho={15} />
               {empresa.data_corte ? `Contabilidade fechada até ${data(empresa.data_corte)}` : 'Data de corte por definir'}
             </span>
-            {empresas.length > 1 && <Link prefetch={false} href="/app?escolher=1" className={`${e.botaoTopo} ${e.soTelemovel}`}>Trocar de empresa</Link>}
             {irs && <TrocarPortal url={`${IRS}/app`} nome="Portal IRS" className={`${e.botaoTopo} ${e.soTelemovel}`} />}
             <Link prefetch={false} href="/conta" className={e.botaoTopo}>A minha conta</Link>
             <form action={signOut} className={e.sairTopo}>
