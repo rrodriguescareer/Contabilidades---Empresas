@@ -46,12 +46,14 @@ async function enviar(e: Aviso) {
   const chave = process.env.RESEND_API_KEY || '';
   if (!/^re_/.test(chave) || !adminConfigured()) return false;
   const admin = adminClient();
+  let registo: string | undefined;
   try {
     const { data: novo } = await admin.from('emails')
       .upsert({ chave: e.chave.slice(0, 200), para: e.para, assunto: e.assunto.slice(0, 250) }, { onConflict: 'chave', ignoreDuplicates: true })
       .select('id');
     const id = novo?.[0]?.id;
     if (!id) return false; // já tinha saído
+    registo = id;
     const r = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${chave}`, 'Content-Type': 'application/json', 'Idempotency-Key': `rr-${id}` },
@@ -60,6 +62,7 @@ async function enviar(e: Aviso) {
         text: [e.titulo, '', ...e.paragrafos, ...(e.destaque ? ['', `${e.destaque.rotulo}: ${e.destaque.valor}`] : []), ...(e.botao ? ['', `${e.botao.texto}: ${e.botao.url}`] : [])].join('\n'),
       }),
       cache: 'no-store',
+      signal: AbortSignal.timeout(20_000),
     });
     const corpo = (await r.json().catch(() => ({}))) as { id?: string; message?: string };
     if (!r.ok) {
@@ -69,7 +72,9 @@ async function enviar(e: Aviso) {
     await admin.from('emails').update({ estado: 'enviado', resend_id: corpo.id || null, enviado_em: new Date().toISOString() }).eq('id', id);
     return true;
   } catch (falha) {
-    console.error(JSON.stringify({ event: 'rr_email_falhou', chave: e.chave, erro: String((falha as Error)?.message || falha) }));
+    const erro = String((falha as Error)?.message || falha);
+    console.error(JSON.stringify({ event: 'rr_email_falhou', chave: e.chave, erro }));
+    if (registo) await admin.from('emails').update({ estado: 'falhou', erro: erro.slice(0, 500) }).eq('id', registo).eq('estado', 'a_enviar').then(() => null, () => null);
     return false;
   }
 }

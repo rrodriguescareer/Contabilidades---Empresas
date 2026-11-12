@@ -32,7 +32,7 @@
 .ligacoes a:hover { text-decoration: underline; }
 
 .legal {
-  display: flex; gap: var(--e-4); font-size: var(--t-xs); color: var(--texto-ténue);
+  display: flex; flex-wrap: wrap; gap: var(--e-2) var(--e-4); font-size: var(--t-xs); color: var(--texto-ténue);
   border-block-start: 1px solid var(--linha); padding-block-start: var(--e-4);
 }
 .legal a { text-decoration: none; }

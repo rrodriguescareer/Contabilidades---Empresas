@@ -67,6 +67,8 @@ export function EcraAutenticacao({ children, titulo, descricao, mensagem, erro, 
 
           <div className={a.legal}>
             <span>Portal Empresas · acesso criado pelo contabilista</span>
+            <a href="https://rr-contabilidade.com/termos" target="_blank" rel="noopener noreferrer">Termos</a>
+            <a href="https://rr-contabilidade.com/privacidade" target="_blank" rel="noopener noreferrer">Privacidade</a>
           </div>
         </div>
       </section>

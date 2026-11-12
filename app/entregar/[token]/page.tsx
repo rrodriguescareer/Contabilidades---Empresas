@@ -15,7 +15,10 @@ function Rodape() {
     <footer className={e.rodape}>
       <strong>Rúben Meirinho Rodrigues · Contabilista Certificado n.º 106297</strong>
       <span>Os documentos ficam guardados em privado, acessíveis apenas ao contabilista e às pessoas da empresa com acesso ao portal.</span>
-      <span>Dúvidas: <a href="mailto:contabilidade.rubenrodrigues@gmail.com">contabilidade.rubenrodrigues@gmail.com</a></span>
+      <span>
+        Dúvidas: <a href="mailto:contabilidade.rubenrodrigues@gmail.com">contabilidade.rubenrodrigues@gmail.com</a>
+        {' · '}<a href="https://rr-contabilidade.com/privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+      </span>
     </footer>
   );
 }

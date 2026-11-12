@@ -91,6 +91,11 @@ export async function pedirCodigoDesativar(): Promise<{ ok?: string; erro?: stri
   const { count } = await admin.from('codigos_verificacao').select('id', { count: 'exact', head: true })
     .eq('user_id', user.id).gte('criado_em', new Date(Date.now() - 15 * 60_000).toISOString());
   if ((count ?? 0) >= 3) return { erro: 'Já pediu vários códigos. Espere 15 minutos e tente de novo.' };
+  // E um teto por dia: quem só tem a palavra-passe não pode passar o dia a
+  // tentar adivinhar o código de 6 algarismos.
+  const { count: hoje } = await admin.from('codigos_verificacao').select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id).gte('criado_em', new Date(Date.now() - 24 * 60 * 60_000).toISOString());
+  if ((hoje ?? 0) >= 10) return { erro: 'Já pediu muitos códigos hoje. Tente amanhã ou contacte o contabilista.' };
   const codigo = String(randomInt(0, 1_000_000)).padStart(6, '0');
   const { error } = await admin.from('codigos_verificacao').insert({
     user_id: user.id, finalidade: 'desativar_2fa', resumo: resumo(codigo, user.id),
